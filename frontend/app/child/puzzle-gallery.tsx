@@ -219,9 +219,22 @@ export default function PuzzleGallery() {
 
   const availableLocalCategories = ['My Pictures', ...Object.keys(localCategories).filter(c => c !== 'My Pictures')];
 
+  // Helper function to ensure image URI is properly formatted
+  const getImageUri = (imageData: string): string => {
+    if (!imageData) return '';
+    // If already has data URI prefix, return as-is
+    if (imageData.startsWith('data:') || imageData.startsWith('file:')) {
+      return imageData;
+    }
+    // Otherwise, add the prefix
+    return `data:image/jpeg;base64,${imageData}`;
+  };
+
   // Render a category card in grid view
   const renderCategoryCard = (categoryData: CategoryData) => {
-    const previewImage = categoryData.puzzles.length > 0 ? categoryData.puzzles[0].image_base64 : null;
+    const previewImage = categoryData.puzzles.length > 0 
+      ? getImageUri(categoryData.puzzles[0].image_base64) 
+      : null;
     
     return (
       <TouchableOpacity
