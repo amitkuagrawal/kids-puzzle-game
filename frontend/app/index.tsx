@@ -269,6 +269,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginVertical: 10,
   },
+  tapHint: {
+    fontSize: 14,
+    color: '#FD7979',
+    fontWeight: '600',
+    marginTop: 5,
+    opacity: 0.8,
+  },
   puzzleContainer: {
     width: 140,
     height: 140,
