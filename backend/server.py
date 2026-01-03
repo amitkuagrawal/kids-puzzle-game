@@ -247,12 +247,88 @@ async def get_all_puzzles():
                 id=str(puzzle['_id']),
                 name=puzzle['name'],
                 image_base64=puzzle['image_base64'],
-                created_at=puzzle['created_at']
+                created_at=puzzle['created_at'],
+                category=puzzle.get('category'),
+                is_preloaded=puzzle.get('is_preloaded', False)
             )
             for puzzle in puzzles
         ]
     except Exception as e:
         logging.error(f"Error fetching puzzles: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/puzzles/preloaded")
+async def get_preloaded_puzzles():
+    """Get all preloaded puzzle images organized by category"""
+    try:
+        # Get all preloaded puzzles
+        puzzles = await db.puzzles.find({'is_preloaded': True}).sort('created_at', -1).to_list(500)
+        
+        # Organize by category
+        categorized: Dict[str, List] = {}
+        uncategorized = []
+        
+        for puzzle in puzzles:
+            category = puzzle.get('category')
+            puzzle_data = {
+                'id': str(puzzle['_id']),
+                'name': puzzle['name'],
+                'image_base64': puzzle['image_base64'],
+                'created_at': puzzle['created_at'].isoformat(),
+            }
+            
+            if category:
+                if category not in categorized:
+                    categorized[category] = []
+                categorized[category].append(puzzle_data)
+            else:
+                uncategorized.append(puzzle_data)
+        
+        # Get category metadata
+        categories = await db.categories.find().to_list(100)
+        category_meta = {cat['name']: {'icon': cat.get('icon', '📁'), 'color': cat.get('color', '#667eea')} for cat in categories}
+        
+        result = []
+        for cat_name, puzzles_list in categorized.items():
+            meta = category_meta.get(cat_name, {'icon': '📁', 'color': '#667eea'})
+            result.append({
+                'category': cat_name,
+                'icon': meta['icon'],
+                'color': meta['color'],
+                'puzzles': puzzles_list
+            })
+        
+        if uncategorized:
+            result.append({
+                'category': 'Uncategorized',
+                'icon': '📁',
+                'color': '#999999',
+                'puzzles': uncategorized
+            })
+        
+        return result
+    except Exception as e:
+        logging.error(f"Error fetching preloaded puzzles: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/puzzles/category/{category_name}")
+async def get_puzzles_by_category(category_name: str):
+    """Get all puzzles in a specific category"""
+    try:
+        puzzles = await db.puzzles.find({'category': category_name}).sort('created_at', -1).to_list(100)
+        return [
+            PuzzleImageResponse(
+                id=str(puzzle['_id']),
+                name=puzzle['name'],
+                image_base64=puzzle['image_base64'],
+                created_at=puzzle['created_at'],
+                category=puzzle.get('category'),
+                is_preloaded=puzzle.get('is_preloaded', False)
+            )
+            for puzzle in puzzles
+        ]
+    except Exception as e:
+        logging.error(f"Error fetching puzzles by category: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.delete("/puzzles/{puzzle_id}")
