@@ -140,10 +140,16 @@ const styles = StyleSheet.create({
   placeholder: {
     width: 42,
   },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 40,
+  },
   titleContainer: {
     alignItems: 'center',
     marginTop: 30,
-    marginBottom: 20,
+    marginBottom: 30,
   },
   title: {
     fontSize: 32,
@@ -152,17 +158,17 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   optionsContainer: {
-    flex: 1,
     paddingHorizontal: 20,
-    justifyContent: 'center',
     gap: 20,
   },
   difficultyCard: {
     width: '100%',
-    paddingVertical: 30,
+    height: 180,
+    paddingVertical: 20,
     paddingHorizontal: 20,
     borderRadius: 25,
     alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -192,6 +198,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     pointerEvents: 'none',
+    zIndex: -1,
   },
   star1: {
     position: 'absolute',
