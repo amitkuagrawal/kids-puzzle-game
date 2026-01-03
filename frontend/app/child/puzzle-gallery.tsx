@@ -387,6 +387,11 @@ export default function PuzzleGallery() {
         </View>
       ) : (
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+          {/* Debug info */}
+          <Text style={{ padding: 10, fontSize: 12, color: '#999' }}>
+            Categories: {categories.length}, Local: {localPuzzles.length}
+          </Text>
+          
           {/* Categories Grid */}
           {(categories.length > 0 || localPuzzles.length > 0) && (
             <View style={styles.categoriesGrid}>
