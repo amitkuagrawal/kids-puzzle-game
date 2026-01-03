@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
   },
   button: {
     width: width * 0.8,
-    paddingVertical: 30,
+    paddingVertical: 35,
     borderRadius: 25,
     alignItems: 'center',
     justifyContent: 'center',
@@ -91,6 +91,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 5,
     elevation: 8,
+    minHeight: 120,
   },
   childButton: {
     backgroundColor: '#FF6B6B',
