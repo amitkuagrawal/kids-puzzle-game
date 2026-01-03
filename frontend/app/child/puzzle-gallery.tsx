@@ -279,7 +279,8 @@ export default function PuzzleGallery() {
         key="local_pictures"
         style={[styles.categoryCard, { borderColor: '#FDACAC' }]}
         onPress={() => {
-          // Show local puzzles in a simple view
+          // Show local puzzles - we need to convert them to CategoryData format
+          // But we'll handle the selection specially
           setSelectedServerCategory({
             category: 'My Pictures',
             icon: '📱',
@@ -287,9 +288,10 @@ export default function PuzzleGallery() {
             puzzles: localPuzzles.map(lp => ({
               id: lp.id,
               name: lp.name,
-              image_base64: lp.imageUri, // Will be handled specially
+              image_base64: lp.imageUri, // Store imageUri here for display
               created_at: lp.created_at,
-            }))
+              _localImageUri: lp.imageUri, // Keep reference to original URI
+            })) as any
           });
         }}
         activeOpacity={0.8}
