@@ -136,27 +136,13 @@ export default function PuzzleGallery() {
       });
 
       if (response.ok) {
-        const newPuzzle = await response.json();
-        
         // Track upload
         Analytics.puzzleUploaded(base64.length);
         
-        Alert.alert('Success!', 'Your picture is ready! Now choose a difficulty level.', [
-          {
-            text: 'OK',
-            onPress: () => {
-              // Navigate directly to difficulty selector
-              router.push({
-                pathname: '/child/difficulty-select',
-                params: {
-                  puzzleId: newPuzzle.id,
-                  puzzleName: newPuzzle.name,
-                  imageBase64: newPuzzle.image_base64,
-                },
-              });
-            },
-          },
-        ]);
+        Alert.alert('Success!', 'Your picture has been added to the library! Tap on it to play.');
+        
+        // Reload puzzles to show the new one
+        await fetchPuzzles();
       } else {
         Alert.alert('Oops!', 'Could not upload your picture');
       }
