@@ -238,13 +238,13 @@ export default function PuzzleGallery() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFD93D',
+    backgroundColor: '#FEEAC9',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#FF6B6B',
+    backgroundColor: '#FD7979',
     paddingVertical: 20,
     paddingHorizontal: 20,
     shadowColor: '#000',
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 20,
-    color: '#FF6B6B',
+    color: '#FD7979',
     marginTop: 20,
     fontWeight: '600',
   },
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
   uploadCard: {
-    backgroundColor: '#4ECDC4',
+    backgroundColor: '#FDACAC',
     borderRadius: 15,
     padding: 20,
     alignItems: 'center',
@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#FF6B6B',
+    color: '#FD7979',
     marginBottom: 15,
     width: '100%',
   },
@@ -329,12 +329,12 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#FF6B6B',
+    color: '#FD7979',
     marginTop: 20,
   },
   emptySubText: {
     fontSize: 18,
-    color: '#666',
+    color: '#FDACAC',
     marginTop: 10,
     textAlign: 'center',
   },
