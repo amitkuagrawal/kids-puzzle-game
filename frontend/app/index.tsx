@@ -229,7 +229,7 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#6A4C93',
+    backgroundColor: '#4ECDC4',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 52,
     fontWeight: 'bold',
-    color: '#FFD700',
+    color: '#FFFFFF',
     marginTop: 20,
     textShadowColor: 'rgba(0, 0, 0, 0.3)',
     textShadowOffset: { width: 2, height: 2 },
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   },
   demoText: {
     fontSize: 18,
-    color: '#FFD700',
+    color: '#FFFFFF',
     fontWeight: 'bold',
     marginVertical: 10,
   },
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 60,
     height: 60,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
