@@ -110,6 +110,81 @@ class AnalyticsEventCreate(BaseModel):
     user_id: Optional[str] = None
     device_type: Optional[str] = None
 
+# Category Routes
+@api_router.post("/categories", response_model=CategoryResponse)
+async def create_category(category: CategoryCreate):
+    """Create a new category"""
+    try:
+        # Check if category already exists
+        existing = await db.categories.find_one({'name': category.name})
+        if existing:
+            raise HTTPException(status_code=400, detail="Category already exists")
+        
+        category_dict = category.dict()
+        category_dict['created_at'] = datetime.utcnow()
+        
+        result = await db.categories.insert_one(category_dict)
+        
+        return CategoryResponse(
+            id=str(result.inserted_id),
+            name=category_dict['name'],
+            icon=category_dict.get('icon', '📁'),
+            color=category_dict.get('color', '#667eea'),
+            image_count=0,
+            created_at=category_dict['created_at']
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Error creating category: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/categories", response_model=List[CategoryResponse])
+async def get_all_categories():
+    """Get all categories with image counts"""
+    try:
+        categories = await db.categories.find().sort('created_at', -1).to_list(100)
+        result = []
+        
+        for cat in categories:
+            # Count images in this category
+            image_count = await db.puzzles.count_documents({'category': cat['name']})
+            result.append(CategoryResponse(
+                id=str(cat['_id']),
+                name=cat['name'],
+                icon=cat.get('icon', '📁'),
+                color=cat.get('color', '#667eea'),
+                image_count=image_count,
+                created_at=cat['created_at']
+            ))
+        
+        return result
+    except Exception as e:
+        logging.error(f"Error fetching categories: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.delete("/categories/{category_id}")
+async def delete_category(category_id: str):
+    """Delete a category (images in category remain but become uncategorized)"""
+    try:
+        category = await db.categories.find_one({'_id': ObjectId(category_id)})
+        if not category:
+            raise HTTPException(status_code=404, detail="Category not found")
+        
+        # Update images in this category to be uncategorized
+        await db.puzzles.update_many(
+            {'category': category['name']},
+            {'$set': {'category': None}}
+        )
+        
+        result = await db.categories.delete_one({'_id': ObjectId(category_id)})
+        return {"message": "Category deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Error deleting category: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Puzzle Image Routes
 @api_router.post("/puzzles", response_model=PuzzleImageResponse)
 async def create_puzzle(puzzle: PuzzleImageCreate):
@@ -117,6 +192,7 @@ async def create_puzzle(puzzle: PuzzleImageCreate):
     try:
         puzzle_dict = puzzle.dict()
         puzzle_dict['created_at'] = datetime.utcnow()
+        puzzle_dict['is_preloaded'] = True  # Images uploaded via admin are preloaded
         
         result = await db.puzzles.insert_one(puzzle_dict)
         puzzle_dict['id'] = str(result.inserted_id)
@@ -126,10 +202,39 @@ async def create_puzzle(puzzle: PuzzleImageCreate):
             id=str(result.inserted_id),
             name=puzzle_dict['name'],
             image_base64=puzzle_dict['image_base64'],
-            created_at=puzzle_dict['created_at']
+            created_at=puzzle_dict['created_at'],
+            category=puzzle_dict.get('category'),
+            is_preloaded=True
         )
     except Exception as e:
         logging.error(f"Error creating puzzle: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/puzzles/bulk")
+async def bulk_upload_puzzles(request: BulkUploadRequest):
+    """Bulk upload multiple puzzle images to a category"""
+    try:
+        uploaded = []
+        for img in request.images:
+            puzzle_dict = {
+                'name': img.name,
+                'image_base64': img.image_base64,
+                'category': request.category,
+                'is_preloaded': True,
+                'created_at': datetime.utcnow()
+            }
+            result = await db.puzzles.insert_one(puzzle_dict)
+            uploaded.append({
+                'id': str(result.inserted_id),
+                'name': img.name
+            })
+        
+        return {
+            "message": f"Successfully uploaded {len(uploaded)} images",
+            "uploaded": uploaded
+        }
+    except Exception as e:
+        logging.error(f"Error bulk uploading puzzles: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/puzzles", response_model=List[PuzzleImageResponse])
