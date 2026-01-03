@@ -10,6 +10,7 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Analytics } from '../../utils/analytics';
 
 const { width } = Dimensions.get('window');
 
