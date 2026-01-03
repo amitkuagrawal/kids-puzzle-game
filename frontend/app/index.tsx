@@ -98,7 +98,8 @@ const styles = StyleSheet.create({
   },
   adminButton: {
     backgroundColor: '#4ECDC4',
-    paddingVertical: 20,
+    paddingVertical: 25,
+    minHeight: 100,
   },
   buttonText: {
     fontSize: 32,
