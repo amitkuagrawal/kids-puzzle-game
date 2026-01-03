@@ -193,7 +193,7 @@ export default function Index() {
 
       {/* Animated Puzzle Demo */}
       <View style={styles.puzzleDemo}>
-        <Text style={styles.demoText}>📸 Upload a Picture</Text>
+        <Text style={styles.demoText}>📸 Upload Your Fav Picture!</Text>
         <View style={styles.puzzleContainer}>
           <Animated.View style={[styles.puzzlePiece, styles.piece1, piece1Style]}>
             <Ionicons name="image" size={40} color="#4CAF50" />
