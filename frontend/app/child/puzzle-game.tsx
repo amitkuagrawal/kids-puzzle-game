@@ -365,7 +365,7 @@ export default function PuzzleGame() {
                   resizeMode="contain"
                 />
                 <View style={styles.completedImageBadge}>
-                  <Ionicons name="checkmark-circle" size={40} color="#4CAF50" />
+                  <Ionicons name="checkmark-circle" size={30} color="#4CAF50" />
                 </View>
               </View>
               
