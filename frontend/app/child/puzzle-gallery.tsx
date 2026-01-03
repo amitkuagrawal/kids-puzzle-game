@@ -22,6 +22,7 @@ import { saveImageLocally, getLocalPuzzles, LocalPuzzle, getImageAsBase64 } from
 
 const { width } = Dimensions.get('window');
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+const CARD_SIZE = (width - 50) / 2; // 2 columns with padding
 
 interface Puzzle {
   id: string;
@@ -46,7 +47,7 @@ export default function PuzzleGallery() {
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('My Pictures');
   const [pendingBase64, setPendingBase64] = useState<string | null>(null);
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [selectedServerCategory, setSelectedServerCategory] = useState<CategoryData | null>(null);
 
   useEffect(() => {
     loadAllPuzzles();
@@ -59,16 +60,15 @@ export default function PuzzleGallery() {
       // Fetch preloaded puzzles from server (organized by category)
       const response = await fetch(`${BACKEND_URL}/api/puzzles/preloaded`);
       const serverCategories = await response.json();
-      setCategories(serverCategories);
+      // Filter out "Uncategorized" category
+      const filteredCategories = serverCategories.filter(
+        (cat: CategoryData) => cat.category !== 'Uncategorized'
+      );
+      setCategories(filteredCategories);
       
       // Load local puzzles
       const local = await getLocalPuzzles();
       setLocalPuzzles(local);
-      
-      // Auto-expand first category if exists
-      if (serverCategories.length > 0) {
-        setExpandedCategories(new Set([serverCategories[0].category]));
-      }
     } catch (error) {
       console.error('Error fetching puzzles:', error);
       // Still try to load local puzzles even if server fails
