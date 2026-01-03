@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Backend API Testing for Puzzle App
-Tests all puzzle-related endpoints with proper base64 image handling
+Backend API Testing Suite for Admin Dashboard Endpoints
+Tests the new category management and bulk upload functionality
 """
 
 import requests
@@ -9,15 +9,28 @@ import json
 import base64
 from datetime import datetime
 import sys
-import os
 
-# Backend URL from environment
+# Get backend URL from environment
 BACKEND_URL = "https://jigsawfun-2.preview.emergentagent.com/api"
+
+# Small test images in base64 format (1x1 pixel images)
+TEST_IMAGE_FLAG = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAI9jU77zgAAAABJRU5ErkJggg=="
+TEST_IMAGE_CAR = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
+TEST_IMAGE_TRUCK = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
 
 def create_test_base64_image():
     """Create a small test base64 image (1x1 pixel PNG)"""
     # This is a minimal 1x1 pixel transparent PNG in base64
     return "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+
+def print_test_header(test_name):
+    print(f"\n{'='*60}")
+    print(f"TESTING: {test_name}")
+    print(f"{'='*60}")
+
+def print_result(success, message):
+    status = "✅ PASS" if success else "❌ FAIL"
+    print(f"{status}: {message}")
 
 def test_api_health():
     """Test if the API is running"""
