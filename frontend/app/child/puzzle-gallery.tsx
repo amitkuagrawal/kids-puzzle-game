@@ -185,29 +185,63 @@ export default function PuzzleGallery() {
           <ActivityIndicator size="large" color="#FF6B6B" />
           <Text style={styles.loadingText}>Loading puzzles...</Text>
         </View>
-      ) : puzzles.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Ionicons name="sad-outline" size={100} color="#FFD700" />
-          <Text style={styles.emptyText}>No puzzles yet!</Text>
-          <Text style={styles.emptySubText}>Ask an adult to add some puzzles</Text>
-        </View>
       ) : (
-        <ScrollView style={styles.scrollView} contentContainerStyle={styles.puzzlesGrid}>
-          {puzzles.map((puzzle) => (
+        <>
+          {/* Upload Your Own Picture Button */}
+          <View style={styles.uploadSection}>
             <TouchableOpacity
-              key={puzzle.id}
-              style={styles.puzzleCard}
-              onPress={() => selectPuzzle(puzzle)}
-              activeOpacity={0.7}
+              style={styles.uploadCard}
+              onPress={pickImage}
+              disabled={processing || uploading}
+              activeOpacity={0.8}
             >
-              <Image
-                source={{ uri: puzzle.image_base64 }}
-                style={styles.puzzleImage}
-                resizeMode="cover"
-              />
+              {processing ? (
+                <>
+                  <ActivityIndicator size="large" color="white" />
+                  <Text style={styles.uploadText}>Processing your picture...</Text>
+                </>
+              ) : uploading ? (
+                <>
+                  <ActivityIndicator size="large" color="white" />
+                  <Text style={styles.uploadText}>Uploading...</Text>
+                </>
+              ) : (
+                <>
+                  <Ionicons name="camera" size={60} color="white" />
+                  <Text style={styles.uploadTitle}>Upload Your Own Picture!</Text>
+                  <Text style={styles.uploadSubtitle}>Make a puzzle from your photos</Text>
+                </>
+              )}
             </TouchableOpacity>
-          ))}
-        </ScrollView>
+          </View>
+
+          {/* Existing Puzzles */}
+          {puzzles.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Ionicons name="images-outline" size={80} color="#FFD700" />
+              <Text style={styles.emptyText}>No puzzles yet!</Text>
+              <Text style={styles.emptySubText}>Upload your first picture above</Text>
+            </View>
+          ) : (
+            <ScrollView style={styles.scrollView} contentContainerStyle={styles.puzzlesGrid}>
+              <Text style={styles.sectionTitle}>Or Choose from Library:</Text>
+              {puzzles.map((puzzle) => (
+                <TouchableOpacity
+                  key={puzzle.id}
+                  style={styles.puzzleCard}
+                  onPress={() => selectPuzzle(puzzle)}
+                  activeOpacity={0.7}
+                >
+                  <Image
+                    source={{ uri: puzzle.image_base64 }}
+                    style={styles.puzzleImage}
+                    resizeMode="cover"
+                  />
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
+        </>
       )}
     </SafeAreaView>
   );
