@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, HTTPException
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -6,9 +6,9 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field
-from typing import List
-import uuid
+from typing import List, Optional
 from datetime import datetime
+from bson import ObjectId
 
 
 ROOT_DIR = Path(__file__).parent
@@ -27,30 +27,77 @@ api_router = APIRouter(prefix="/api")
 
 
 # Define Models
-class StatusCheck(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+class PuzzleImage(BaseModel):
+    id: Optional[str] = None
+    name: str
+    image_base64: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
+class PuzzleImageCreate(BaseModel):
+    name: str
+    image_base64: str
 
-# Add your routes to the router instead of directly to app
+class PuzzleImageResponse(BaseModel):
+    id: str
+    name: str
+    image_base64: str
+    created_at: datetime
+
+# Puzzle Image Routes
+@api_router.post("/puzzles", response_model=PuzzleImageResponse)
+async def create_puzzle(puzzle: PuzzleImageCreate):
+    """Admin endpoint to upload a new puzzle image"""
+    try:
+        puzzle_dict = puzzle.dict()
+        puzzle_dict['created_at'] = datetime.utcnow()
+        
+        result = await db.puzzles.insert_one(puzzle_dict)
+        puzzle_dict['id'] = str(result.inserted_id)
+        puzzle_dict['_id'] = result.inserted_id
+        
+        return PuzzleImageResponse(
+            id=str(result.inserted_id),
+            name=puzzle_dict['name'],
+            image_base64=puzzle_dict['image_base64'],
+            created_at=puzzle_dict['created_at']
+        )
+    except Exception as e:
+        logging.error(f"Error creating puzzle: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/puzzles", response_model=List[PuzzleImageResponse])
+async def get_all_puzzles():
+    """Get all available puzzle images"""
+    try:
+        puzzles = await db.puzzles.find().sort('created_at', -1).to_list(100)
+        return [
+            PuzzleImageResponse(
+                id=str(puzzle['_id']),
+                name=puzzle['name'],
+                image_base64=puzzle['image_base64'],
+                created_at=puzzle['created_at']
+            )
+            for puzzle in puzzles
+        ]
+    except Exception as e:
+        logging.error(f"Error fetching puzzles: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.delete("/puzzles/{puzzle_id}")
+async def delete_puzzle(puzzle_id: str):
+    """Admin endpoint to delete a puzzle image"""
+    try:
+        result = await db.puzzles.delete_one({'_id': ObjectId(puzzle_id)})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Puzzle not found")
+        return {"message": "Puzzle deleted successfully"}
+    except Exception as e:
+        logging.error(f"Error deleting puzzle: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.get("/")
 async def root():
-    return {"message": "Hello World"}
-
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.dict()
-    status_obj = StatusCheck(**status_dict)
-    _ = await db.status_checks.insert_one(status_obj.dict())
-    return status_obj
-
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    status_checks = await db.status_checks.find().to_list(1000)
-    return [StatusCheck(**status_check) for status_check in status_checks]
+    return {"message": "Puzzle API is running"}
 
 # Include the router in the main app
 app.include_router(api_router)
