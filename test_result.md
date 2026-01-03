@@ -153,15 +153,18 @@ backend:
 frontend:
   - task: "Home screen with navigation"
     implemented: true
-    working: true
+    working: false
     file: "/app/frontend/app/index.tsx"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Colorful home screen created with 'Play Puzzle' and 'Admin Panel' buttons. Purple background with decorative stars. Verified in screenshot - loads correctly."
+      - working: false
+        agent: "testing"
+        comment: "CRITICAL RE-TEST COMPLETED: ✅ Navigation FIXED - both buttons successfully navigate to correct screens (/child/puzzle-gallery and /admin/manage). ✅ Pointer events issue RESOLVED - decorative stars no longer block interactions. ✅ No console errors found. ❌ CRITICAL ISSUE: Button touch targets too small for mobile - Play button: 185x37px (37px height), Admin button: 121x23px (23px height). Both need minimum 44px height for accessibility. CSS shows minHeight: 120px/100px but not being applied correctly."
 
   - task: "Admin panel - upload and manage puzzles"
     implemented: true
