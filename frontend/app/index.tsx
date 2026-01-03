@@ -229,7 +229,7 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#4ECDC4',
+    backgroundColor: '#FFCDC9',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
@@ -241,15 +241,15 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 52,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: '#FD7979',
     marginTop: 20,
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowColor: 'rgba(0, 0, 0, 0.1)',
     textShadowOffset: { width: 2, height: 2 },
     textShadowRadius: 5,
   },
   subtitle: {
     fontSize: 20,
-    color: '#FFFFFF',
+    color: '#FD7979',
     marginTop: 10,
     fontWeight: '600',
   },
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   },
   demoText: {
     fontSize: 18,
-    color: '#FFFFFF',
+    color: '#FD7979',
     fontWeight: 'bold',
     marginVertical: 10,
   },
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 60,
     height: 60,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: '#FEEAC9',
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
@@ -319,10 +319,10 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   childButton: {
-    backgroundColor: '#FF6B6B',
+    backgroundColor: '#FD7979',
   },
   adminButton: {
-    backgroundColor: '#4ECDC4',
+    backgroundColor: '#FDACAC',
     height: 100,
   },
   buttonText: {
