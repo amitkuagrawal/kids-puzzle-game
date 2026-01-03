@@ -64,16 +64,49 @@ export default function AdminManage() {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [4, 3],
-        quality: 0.8,
-        base64: true,
+        quality: 1, // Pick at full quality, we'll compress later
       });
 
-      if (!result.canceled && result.assets[0].base64) {
-        await uploadImage(result.assets[0].base64);
+      if (!result.canceled && result.assets[0].uri) {
+        await processAndUploadImage(result.assets[0].uri);
       }
     } catch (error) {
       console.error('Error picking image:', error);
       Alert.alert('Error', 'Failed to pick image');
+    }
+  };
+
+  const processAndUploadImage = async (imageUri: string) => {
+    try {
+      setProcessing(true);
+      
+      // Get image dimensions to determine if resizing is needed
+      const MAX_DIMENSION = 800; // Maximum width or height
+      
+      // Resize and compress the image
+      const manipulatedImage = await ImageManipulator.manipulateAsync(
+        imageUri,
+        [
+          { resize: { width: MAX_DIMENSION } }, // Resize to max 800px width, height auto
+        ],
+        {
+          compress: 0.7, // 70% quality - good balance between size and quality
+          format: ImageManipulator.SaveFormat.JPEG,
+          base64: true,
+        }
+      );
+
+      setProcessing(false);
+      
+      if (manipulatedImage.base64) {
+        await uploadImage(manipulatedImage.base64);
+      } else {
+        Alert.alert('Error', 'Failed to process image');
+      }
+    } catch (error) {
+      console.error('Error processing image:', error);
+      setProcessing(false);
+      Alert.alert('Error', 'Failed to process image');
     }
   };
 
