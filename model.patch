@@ -1,29 +1,74 @@
-diff --git a/frontend/app/child/puzzle-game.tsx b/frontend/app/child/puzzle-game.tsx
-index be52acd..ff658e9 100644
---- a/frontend/app/child/puzzle-game.tsx
-+++ b/frontend/app/child/puzzle-game.tsx
-@@ -103,19 +103,11 @@ export default function PuzzleGame() {
-   };
- 
-   const playCelebration = () => {
--    Animated.sequence([
--      Animated.timing(confettiAnim, {
--        toValue: 1,
--        duration: 500,
--        useNativeDriver: true,
--      }),
--      Animated.timing(confettiAnim, {
--        toValue: 0,
--        duration: 500,
--        delay: 2000,
--        useNativeDriver: true,
--      }),
--    ]).start();
-+    Animated.timing(confettiAnim, {
-+      toValue: 1,
-+      duration: 500,
-+      useNativeDriver: true,
-+    }).start();
-   };
- 
-   const formatTime = (seconds: number) => {
+diff --git a/frontend/app/index.tsx b/frontend/app/index.tsx
+index 1faf55b..ba7f74d 100644
+--- a/frontend/app/index.tsx
++++ b/frontend/app/index.tsx
+@@ -229,7 +229,7 @@ export default function Index() {
+ const styles = StyleSheet.create({
+   container: {
+     flex: 1,
+-    backgroundColor: '#6A4C93',
++    backgroundColor: '#4ECDC4',
+     alignItems: 'center',
+     justifyContent: 'center',
+     padding: 20,
+@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
+   title: {
+     fontSize: 52,
+     fontWeight: 'bold',
+-    color: '#FFD700',
++    color: '#FFFFFF',
+     marginTop: 20,
+     textShadowColor: 'rgba(0, 0, 0, 0.3)',
+     textShadowOffset: { width: 2, height: 2 },
+@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
+   },
+   demoText: {
+     fontSize: 18,
+-    color: '#FFD700',
++    color: '#FFFFFF',
+     fontWeight: 'bold',
+     marginVertical: 10,
+   },
+@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
+     position: 'absolute',
+     width: 60,
+     height: 60,
+-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
++    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+     borderRadius: 10,
+     justifyContent: 'center',
+     alignItems: 'center',
+diff --git a/model.patch b/model.patch
+index 94f2a09..e69de29 100644
+--- a/model.patch
++++ b/model.patch
+@@ -1,29 +0,0 @@
+-diff --git a/frontend/app/child/puzzle-game.tsx b/frontend/app/child/puzzle-game.tsx
+-index be52acd..ff658e9 100644
+---- a/frontend/app/child/puzzle-game.tsx
+-+++ b/frontend/app/child/puzzle-game.tsx
+-@@ -103,19 +103,11 @@ export default function PuzzleGame() {
+-   };
+- 
+-   const playCelebration = () => {
+--    Animated.sequence([
+--      Animated.timing(confettiAnim, {
+--        toValue: 1,
+--        duration: 500,
+--        useNativeDriver: true,
+--      }),
+--      Animated.timing(confettiAnim, {
+--        toValue: 0,
+--        duration: 500,
+--        delay: 2000,
+--        useNativeDriver: true,
+--      }),
+--    ]).start();
+-+    Animated.timing(confettiAnim, {
+-+      toValue: 1,
+-+      duration: 500,
+-+      useNativeDriver: true,
+-+    }).start();
+-   };
+- 
+-   const formatTime = (seconds: number) => {
