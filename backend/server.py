@@ -185,6 +185,74 @@ async def get_scores(puzzle_id: str, difficulty: str):
         logging.error(f"Error fetching scores: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# Analytics Routes
+@api_router.post("/analytics/event")
+async def log_analytics_event(event: AnalyticsEventCreate):
+    """Log an analytics event"""
+    try:
+        event_dict = event.dict()
+        event_dict['timestamp'] = datetime.utcnow()
+        
+        await db.analytics.insert_one(event_dict)
+        return {"message": "Event logged successfully"}
+    except Exception as e:
+        logging.error(f"Error logging analytics event: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/analytics/metrics")
+async def get_analytics_metrics(days: int = 7):
+    """Get analytics metrics for the specified number of days"""
+    try:
+        cutoff_date = datetime.utcnow() - timedelta(days=days)
+        
+        # Get all events in time range
+        events = await db.analytics.find({
+            'timestamp': {'$gte': cutoff_date}
+        }).to_list(10000)
+        
+        # Calculate metrics
+        metrics = {
+            'total_sessions': len(set(e.get('session_id') for e in events if e.get('session_id'))),
+            'total_events': len(events),
+            'puzzles_completed': len([e for e in events if e['event_type'] == 'puzzle_completed']),
+            'puzzles_abandoned': len([e for e in events if e['event_type'] == 'puzzle_abandoned']),
+            'uploads': len([e for e in events if e['event_type'] == 'puzzle_uploaded']),
+            'hint_usage': len([e for e in events if e['event_type'] == 'hint_used']),
+            'event_breakdown': {},
+            'difficulty_breakdown': {},
+            'avg_completion_time': {},
+            'return_visits': 0,
+        }
+        
+        # Event type breakdown
+        for event in events:
+            event_type = event['event_type']
+            metrics['event_breakdown'][event_type] = metrics['event_breakdown'].get(event_type, 0) + 1
+        
+        # Difficulty breakdown
+        for event in events:
+            if event['event_type'] in ['puzzle_started', 'puzzle_completed']:
+                difficulty = event.get('event_data', {}).get('difficulty', 'unknown')
+                metrics['difficulty_breakdown'][difficulty] = metrics['difficulty_breakdown'].get(difficulty, 0) + 1
+        
+        # Average completion time by difficulty
+        completion_times = {}
+        for event in events:
+            if event['event_type'] == 'puzzle_completed':
+                difficulty = event.get('event_data', {}).get('difficulty', 'unknown')
+                time = event.get('event_data', {}).get('time_seconds', 0)
+                if difficulty not in completion_times:
+                    completion_times[difficulty] = []
+                completion_times[difficulty].append(time)
+        
+        for diff, times in completion_times.items():
+            metrics['avg_completion_time'][diff] = sum(times) / len(times) if times else 0
+        
+        return metrics
+    except Exception as e:
+        logging.error(f"Error fetching analytics: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.get("/")
 async def root():
     return {"message": "Puzzle API is running"}
