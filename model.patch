@@ -1,99 +1,46 @@
-diff --git a/frontend/app/index.tsx b/frontend/app/index.tsx
-index ba7f74d..08cdab2 100644
---- a/frontend/app/index.tsx
-+++ b/frontend/app/index.tsx
-@@ -229,7 +229,7 @@ export default function Index() {
- const styles = StyleSheet.create({
-   container: {
-     flex: 1,
--    backgroundColor: '#4ECDC4',
-+    backgroundColor: '#FFCDC9',
-     alignItems: 'center',
-     justifyContent: 'center',
-     padding: 20,
-@@ -241,15 +241,15 @@ const styles = StyleSheet.create({
-   title: {
-     fontSize: 52,
-     fontWeight: 'bold',
--    color: '#FFFFFF',
-+    color: '#FD7979',
-     marginTop: 20,
--    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-+    textShadowColor: 'rgba(0, 0, 0, 0.1)',
-     textShadowOffset: { width: 2, height: 2 },
-     textShadowRadius: 5,
-   },
-   subtitle: {
-     fontSize: 20,
--    color: '#FFFFFF',
-+    color: '#FD7979',
-     marginTop: 10,
-     fontWeight: '600',
-   },
-@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
-   },
-   demoText: {
-     fontSize: 18,
--    color: '#FFFFFF',
-+    color: '#FD7979',
-     fontWeight: 'bold',
-     marginVertical: 10,
-   },
-@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
-     position: 'absolute',
-     width: 60,
-     height: 60,
--    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-+    backgroundColor: '#FEEAC9',
-     borderRadius: 10,
-     justifyContent: 'center',
-     alignItems: 'center',
-@@ -319,10 +319,10 @@ const styles = StyleSheet.create({
-     elevation: 8,
-   },
-   childButton: {
--    backgroundColor: '#FF6B6B',
-+    backgroundColor: '#FD7979',
-   },
-   adminButton: {
--    backgroundColor: '#4ECDC4',
-+    backgroundColor: '#FDACAC',
-     height: 100,
-   },
-   buttonText: {
 diff --git a/model.patch b/model.patch
-index 8c72a55..e69de29 100644
+index d9d3b2f..e69de29 100644
 --- a/model.patch
 +++ b/model.patch
-@@ -1,74 +0,0 @@
+@@ -1,142 +0,0 @@
 -diff --git a/frontend/app/index.tsx b/frontend/app/index.tsx
--index 1faf55b..ba7f74d 100644
+-index ba7f74d..08cdab2 100644
 ---- a/frontend/app/index.tsx
 -+++ b/frontend/app/index.tsx
 -@@ -229,7 +229,7 @@ export default function Index() {
 - const styles = StyleSheet.create({
 -   container: {
 -     flex: 1,
---    backgroundColor: '#6A4C93',
--+    backgroundColor: '#4ECDC4',
+--    backgroundColor: '#4ECDC4',
+-+    backgroundColor: '#FFCDC9',
 -     alignItems: 'center',
 -     justifyContent: 'center',
 -     padding: 20,
--@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
+-@@ -241,15 +241,15 @@ const styles = StyleSheet.create({
 -   title: {
 -     fontSize: 52,
 -     fontWeight: 'bold',
---    color: '#FFD700',
--+    color: '#FFFFFF',
+--    color: '#FFFFFF',
+-+    color: '#FD7979',
 -     marginTop: 20,
--     textShadowColor: 'rgba(0, 0, 0, 0.3)',
+--    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+-+    textShadowColor: 'rgba(0, 0, 0, 0.1)',
 -     textShadowOffset: { width: 2, height: 2 },
+-     textShadowRadius: 5,
+-   },
+-   subtitle: {
+-     fontSize: 20,
+--    color: '#FFFFFF',
+-+    color: '#FD7979',
+-     marginTop: 10,
+-     fontWeight: '600',
+-   },
 -@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
 -   },
 -   demoText: {
 -     fontSize: 18,
---    color: '#FFD700',
--+    color: '#FFFFFF',
+--    color: '#FFFFFF',
+-+    color: '#FD7979',
 -     fontWeight: 'bold',
 -     marginVertical: 10,
 -   },
@@ -101,42 +48,211 @@ index 8c72a55..e69de29 100644
 -     position: 'absolute',
 -     width: 60,
 -     height: 60,
---    backgroundColor: 'rgba(255, 255, 255, 0.9)',
--+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+--    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+-+    backgroundColor: '#FEEAC9',
 -     borderRadius: 10,
 -     justifyContent: 'center',
 -     alignItems: 'center',
+-@@ -319,10 +319,10 @@ const styles = StyleSheet.create({
+-     elevation: 8,
+-   },
+-   childButton: {
+--    backgroundColor: '#FF6B6B',
+-+    backgroundColor: '#FD7979',
+-   },
+-   adminButton: {
+--    backgroundColor: '#4ECDC4',
+-+    backgroundColor: '#FDACAC',
+-     height: 100,
+-   },
+-   buttonText: {
 -diff --git a/model.patch b/model.patch
--index 94f2a09..e69de29 100644
+-index 8c72a55..e69de29 100644
 ---- a/model.patch
 -+++ b/model.patch
--@@ -1,29 +0,0 @@
---diff --git a/frontend/app/child/puzzle-game.tsx b/frontend/app/child/puzzle-game.tsx
---index be52acd..ff658e9 100644
------ a/frontend/app/child/puzzle-game.tsx
---+++ b/frontend/app/child/puzzle-game.tsx
---@@ -103,19 +103,11 @@ export default function PuzzleGame() {
---   };
--- 
---   const playCelebration = () => {
----    Animated.sequence([
----      Animated.timing(confettiAnim, {
----        toValue: 1,
----        duration: 500,
----        useNativeDriver: true,
----      }),
----      Animated.timing(confettiAnim, {
----        toValue: 0,
----        duration: 500,
----        delay: 2000,
----        useNativeDriver: true,
----      }),
----    ]).start();
---+    Animated.timing(confettiAnim, {
---+      toValue: 1,
---+      duration: 500,
---+      useNativeDriver: true,
---+    }).start();
---   };
--- 
---   const formatTime = (seconds: number) => {
+-@@ -1,74 +0,0 @@
+--diff --git a/frontend/app/index.tsx b/frontend/app/index.tsx
+--index 1faf55b..ba7f74d 100644
+----- a/frontend/app/index.tsx
+--+++ b/frontend/app/index.tsx
+--@@ -229,7 +229,7 @@ export default function Index() {
+-- const styles = StyleSheet.create({
+--   container: {
+--     flex: 1,
+---    backgroundColor: '#6A4C93',
+--+    backgroundColor: '#4ECDC4',
+--     alignItems: 'center',
+--     justifyContent: 'center',
+--     padding: 20,
+--@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
+--   title: {
+--     fontSize: 52,
+--     fontWeight: 'bold',
+---    color: '#FFD700',
+--+    color: '#FFFFFF',
+--     marginTop: 20,
+--     textShadowColor: 'rgba(0, 0, 0, 0.3)',
+--     textShadowOffset: { width: 2, height: 2 },
+--@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
+--   },
+--   demoText: {
+--     fontSize: 18,
+---    color: '#FFD700',
+--+    color: '#FFFFFF',
+--     fontWeight: 'bold',
+--     marginVertical: 10,
+--   },
+--@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
+--     position: 'absolute',
+--     width: 60,
+--     height: 60,
+---    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+--+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+--     borderRadius: 10,
+--     justifyContent: 'center',
+--     alignItems: 'center',
+--diff --git a/model.patch b/model.patch
+--index 94f2a09..e69de29 100644
+----- a/model.patch
+--+++ b/model.patch
+--@@ -1,29 +0,0 @@
+---diff --git a/frontend/app/child/puzzle-game.tsx b/frontend/app/child/puzzle-game.tsx
+---index be52acd..ff658e9 100644
+------ a/frontend/app/child/puzzle-game.tsx
+---+++ b/frontend/app/child/puzzle-game.tsx
+---@@ -103,19 +103,11 @@ export default function PuzzleGame() {
+---   };
+--- 
+---   const playCelebration = () => {
+----    Animated.sequence([
+----      Animated.timing(confettiAnim, {
+----        toValue: 1,
+----        duration: 500,
+----        useNativeDriver: true,
+----      }),
+----      Animated.timing(confettiAnim, {
+----        toValue: 0,
+----        duration: 500,
+----        delay: 2000,
+----        useNativeDriver: true,
+----      }),
+----    ]).start();
+---+    Animated.timing(confettiAnim, {
+---+      toValue: 1,
+---+      duration: 500,
+---+      useNativeDriver: true,
+---+    }).start();
+---   };
+--- 
+---   const formatTime = (seconds: number) => {
+diff --git a/test_result.md b/test_result.md
+index 64162e5..77c3d42 100644
+--- a/test_result.md
++++ b/test_result.md
+@@ -150,6 +150,96 @@ backend:
+         agent: "testing"
+         comment: "TESTED: DELETE /api/puzzles/{puzzle_id} endpoint working perfectly. Successfully deletes puzzles by valid ObjectId. Returns 200 with success message. Correctly handles non-existent puzzles and invalid ObjectId formats (proper error logging). Verified deletion by confirming puzzle no longer appears in GET /api/puzzles."
+ 
++  - task: "Create category endpoint"
++    implemented: true
++    working: true
++    file: "/app/backend/server.py"
++    stuck_count: 0
++    priority: "high"
++    needs_retesting: false
++    status_history:
++      - working: "NA"
++        agent: "main"
++        comment: "POST /api/categories endpoint created to create new categories with name, icon, and color. Validates unique category names and stores in MongoDB categories collection."
++      - working: true
++        agent: "testing"
++        comment: "TESTED: POST /api/categories endpoint working perfectly. Successfully created Flags category (🏳️, #FF9800) and Vehicles category (🚗, #2196F3). Correctly rejects duplicate category names with 400 error. Returns proper CategoryResponse with id, name, icon, color, image_count=0, and created_at."
++
++  - task: "Get all categories endpoint"
++    implemented: true
++    working: true
++    file: "/app/backend/server.py"
++    stuck_count: 0
++    priority: "high"
++    needs_retesting: false
++    status_history:
++      - working: "NA"
++        agent: "main"
++        comment: "GET /api/categories endpoint created to fetch all categories with image counts. Counts images in each category and returns CategoryResponse objects sorted by created_at."
++      - working: true
++        agent: "testing"
++        comment: "TESTED: GET /api/categories endpoint working perfectly. Successfully fetched 3 categories including newly created ones. Correctly shows image_count=0 for new categories. Returns proper structure with id, name, icon, color, image_count, and created_at fields."
++
++  - task: "Delete category endpoint"
++    implemented: true
++    working: true
++    file: "/app/backend/server.py"
++    stuck_count: 0
++    priority: "medium"
++    needs_retesting: false
++    status_history:
++      - working: "NA"
++        agent: "main"
++        comment: "DELETE /api/categories/{category_id} endpoint created to delete categories. Updates images in deleted category to become uncategorized (category=None)."
++      - working: true
++        agent: "testing"
++        comment: "TESTED: DELETE /api/categories/{category_id} endpoint working perfectly. Successfully deleted Flags category and verified that Test Flag Puzzle became uncategorized. Images properly moved to Uncategorized section in preloaded puzzles response."
++
++  - task: "Bulk upload puzzles endpoint"
++    implemented: true
++    working: true
++    file: "/app/backend/server.py"
++    stuck_count: 0
++    priority: "high"
++    needs_retesting: false
++    status_history:
++      - working: "NA"
++        agent: "main"
++        comment: "POST /api/puzzles/bulk endpoint created to upload multiple images to a category at once. Accepts category name and array of images with name and base64 data."
++      - working: true
++        agent: "testing"
++        comment: "TESTED: POST /api/puzzles/bulk endpoint working perfectly. Successfully uploaded 2 test images (Test Car, Test Truck) to Vehicles category. Returns success message with count and array of uploaded items with id and name."
++
++  - task: "Get preloaded puzzles by category endpoint"
++    implemented: true
++    working: true
++    file: "/app/backend/server.py"
++    stuck_count: 0
++    priority: "high"
++    needs_retesting: false
++    status_history:
++      - working: "NA"
++        agent: "main"
++        comment: "GET /api/puzzles/preloaded endpoint created to fetch all preloaded puzzles organized by category. Returns categorized structure with category metadata (icon, color) and puzzles array."
++      - working: true
++        agent: "testing"
++        comment: "TESTED: GET /api/puzzles/preloaded endpoint working perfectly. Successfully organized puzzles by category (Vehicles: 2 puzzles, Flags: 1 puzzle). Correctly includes category metadata (icon, color) and shows Uncategorized section after category deletion."
++
++  - task: "Get puzzles by category endpoint"
++    implemented: true
++    working: true
++    file: "/app/backend/server.py"
++    stuck_count: 0
++    priority: "medium"
++    needs_retesting: false
++    status_history:
++      - working: "NA"
++        agent: "main"
++        comment: "GET /api/puzzles/category/{category_name} endpoint created to fetch all puzzles in a specific category. Returns array of PuzzleImageResponse objects filtered by category."
++      - working: true
++        agent: "testing"
++        comment: "TESTED: GET /api/puzzles/category/{category_name} endpoint working perfectly. Successfully fetched 2 puzzles from Vehicles category (Test Car, Test Truck). Returns proper PuzzleImageResponse structure with id, name, image_base64, created_at, category, and is_preloaded fields."
++
+ frontend:
+   - task: "Home screen with navigation"
+     implemented: true
+@@ -236,4 +326,6 @@ agent_communication:
+   - agent: "testing"
+     message: "HOME SCREEN RE-TEST COMPLETE: ✅ NAVIGATION ISSUE RESOLVED - Both 'Play Puzzle!' and 'Admin Panel' buttons successfully navigate to correct screens. ✅ Pointer events fix working - decorative stars no longer block interactions. ❌ NEW CRITICAL ISSUE: Button touch targets too small for mobile accessibility (37px and 23px height vs required 44px minimum). CSS minHeight values not being applied correctly. Need to fix button sizing before proceeding with other frontend tests."
+   - agent: "main"
+-    message: "ENHANCED ADMIN DASHBOARD IMPLEMENTED: Converted analytics dashboard into full admin dashboard with two tabs: 1) Image Management - create categories, upload single/bulk images, view/delete images by category. 2) Analytics - all existing metrics preserved. New backend endpoints added: POST/GET/DELETE /api/categories, POST /api/puzzles/bulk, GET /api/puzzles/preloaded, GET /api/puzzles/category/{name}. Dashboard accessible at /api/admin-dashboard. Need to test new category and bulk upload endpoints."
+\ No newline at end of file
++    message: "ENHANCED ADMIN DASHBOARD IMPLEMENTED: Converted analytics dashboard into full admin dashboard with two tabs: 1) Image Management - create categories, upload single/bulk images, view/delete images by category. 2) Analytics - all existing metrics preserved. New backend endpoints added: POST/GET/DELETE /api/categories, POST /api/puzzles/bulk, GET /api/puzzles/preloaded, GET /api/puzzles/category/{name}. Dashboard accessible at /api/admin-dashboard. Need to test new category and bulk upload endpoints."
++  - agent: "testing"
++    message: "ADMIN DASHBOARD BACKEND TESTING COMPLETE: ✅ ALL 6 NEW ENDPOINTS WORKING PERFECTLY. Comprehensive testing completed: 1) POST /api/categories - creates categories with icons/colors, rejects duplicates. 2) GET /api/categories - fetches all with image counts. 3) DELETE /api/categories/{id} - deletes category, makes images uncategorized. 4) POST /api/puzzles/bulk - bulk uploads multiple images to category. 5) GET /api/puzzles/preloaded - organizes puzzles by category with metadata. 6) GET /api/puzzles/category/{name} - fetches category-specific puzzles. All test scenarios from review request passed successfully. Backend ready for production use."
+\ No newline at end of file
