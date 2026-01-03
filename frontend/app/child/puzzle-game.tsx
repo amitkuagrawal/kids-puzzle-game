@@ -117,10 +117,10 @@ export default function PuzzleGame() {
       setIsComplete(true);
       if (timerRef.current) clearInterval(timerRef.current);
       
-      // Calculate score and track completion
+      // Calculate score
       const finalScore = calculateScore();
       
-      // Track puzzle completion analytics
+      // Track puzzle completion analytics (non-blocking)
       Analytics.puzzleCompleted(
         puzzleId as string, 
         difficulty as string, 
@@ -129,9 +129,10 @@ export default function PuzzleGame() {
         finalScore
       );
       
-      // Save score
-      await saveScore(finalScore);
+      // Save score in background (don't wait)
+      saveScore(finalScore).catch(err => console.error('Error saving score:', err));
       
+      // Show celebration immediately
       playCelebration();
     }
   };
