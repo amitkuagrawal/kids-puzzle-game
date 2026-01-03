@@ -168,15 +168,24 @@ export default function PuzzleGallery() {
         }
       );
 
-      setProcessing(false);
-      
       if (manipulatedImage.base64) {
-        // Show category selection modal
-        setPendingBase64(manipulatedImage.base64);
-        setShowCategoryModal(true);
+        // Save directly to "My Pictures" category
+        const puzzleName = `My Puzzle ${new Date().toLocaleDateString()}`;
+        await saveImageLocally(manipulatedImage.base64, puzzleName, 'My Pictures');
+        
+        // Track upload
+        Analytics.puzzleUploaded(manipulatedImage.base64.length);
+        
+        Alert.alert('Success!', 'Your picture has been saved! Tap "My Pictures" to play.');
+        
+        // Reload local puzzles
+        const local = await getLocalPuzzles();
+        setLocalPuzzles(local);
       } else {
         Alert.alert('Oops!', 'Could not process image');
       }
+      
+      setProcessing(false);
     } catch (error) {
       console.error('Error processing image:', error);
       setProcessing(false);
