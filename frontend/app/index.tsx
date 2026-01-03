@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
   },
   button: {
     width: width * 0.8,
-    paddingVertical: 35,
+    height: 130,
     borderRadius: 25,
     alignItems: 'center',
     justifyContent: 'center',
@@ -91,15 +91,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 5,
     elevation: 8,
-    minHeight: 120,
   },
   childButton: {
     backgroundColor: '#FF6B6B',
   },
   adminButton: {
     backgroundColor: '#4ECDC4',
-    paddingVertical: 25,
-    minHeight: 100,
+    height: 100,
   },
   buttonText: {
     fontSize: 32,
