@@ -49,7 +49,7 @@ export default function PuzzleGame() {
   const [showPreview, setShowPreview] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [topScores, setTopScores] = useState<ScoreEntry[]>([]);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<any>(null);
   const confettiAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
