@@ -135,6 +135,22 @@ export default function PuzzleGame() {
     return baseScore + timeBonus + moveBonus;
   };
 
+  const handlePiecePress = (position: number) => {
+    if (selectedPiece === null) {
+      // First piece selected
+      setSelectedPiece(position);
+    } else if (selectedPiece === position) {
+      // Deselect if same piece clicked
+      setSelectedPiece(null);
+    } else {
+      // Swap with selected piece
+      const index1 = puzzlePieces.findIndex(p => p.currentPosition === selectedPiece);
+      const index2 = puzzlePieces.findIndex(p => p.currentPosition === position);
+      swapPieces(index1, index2);
+      setSelectedPiece(null);
+    }
+  };
+
   const renderPuzzlePiece = (position: number) => {
     const piece = getPieceAtPosition(position);
     if (!piece) return null;
@@ -143,6 +159,8 @@ export default function PuzzleGame() {
     const pieceHeight = PUZZLE_SIZE / rows;
     const row = Math.floor(piece.correctPosition / cols);
     const col = piece.correctPosition % cols;
+    const isSelected = selectedPiece === position;
+    const isCorrect = piece.correctPosition === piece.currentPosition;
 
     return (
       <TouchableOpacity
@@ -153,21 +171,9 @@ export default function PuzzleGame() {
             width: pieceWidth - 4,
             height: pieceHeight - 4,
           },
+          isSelected && styles.selectedPiece,
         ]}
-        onPress={() => {
-          // Find adjacent empty or swappable piece logic
-          const currentRow = Math.floor(position / cols);
-          const currentCol = position % cols;
-          
-          // Try to swap with neighbor (simplified for kids - just swap any two pieces)
-          const randomNeighbor = Math.floor(Math.random() * numPieces);
-          if (randomNeighbor !== position) {
-            swapPieces(
-              puzzlePieces.findIndex(p => p.currentPosition === position),
-              puzzlePieces.findIndex(p => p.currentPosition === randomNeighbor)
-            );
-          }
-        }}
+        onPress={() => handlePiecePress(position)}
         activeOpacity={0.7}
       >
         <Image
@@ -185,7 +191,12 @@ export default function PuzzleGame() {
           ]}
           resizeMode="cover"
         />
-        <View style={styles.pieceBorder} />
+        <View style={[styles.pieceBorder, isSelected && styles.selectedBorder]} />
+        {isSelected && (
+          <View style={styles.selectionIndicator}>
+            <Ionicons name="hand-left" size={30} color="#FFD700" />
+          </View>
+        )}
       </TouchableOpacity>
     );
   };
