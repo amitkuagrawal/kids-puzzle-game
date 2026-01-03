@@ -608,51 +608,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
   },
-  scoreboardContainer: {
-    width: '100%',
-    marginTop: 20,
-    backgroundColor: '#F5F5F5',
-    borderRadius: 15,
-    padding: 15,
-    maxHeight: 250,
-  },
-  scoreboardTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  scoreboardList: {
-    maxHeight: 200,
-  },
-  scoreboardEntry: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'white',
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 8,
-  },
-  scoreboardRank: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FF6B6B',
-    width: 40,
-  },
-  scoreboardDetails: {
-    flex: 1,
-  },
-  scoreboardScore: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  scoreboardInfo: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 2,
-  },
   completionButtons: {
     width: '100%',
     gap: 15,
@@ -681,5 +636,64 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 22,
     fontWeight: 'bold',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 25,
+    padding: 20,
+    width: '100%',
+    maxWidth: 400,
+    maxHeight: '80%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  closeButton: {
+    padding: 5,
+  },
+  modalScoreboardList: {
+    maxHeight: 400,
+  },
+  modalScoreboardEntry: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    padding: 15,
+    borderRadius: 12,
+    marginBottom: 10,
+  },
+  modalScoreboardRank: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#FF6B6B',
+    width: 45,
+  },
+  modalScoreboardDetails: {
+    flex: 1,
+  },
+  modalScoreboardScore: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  modalScoreboardInfo: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 3,
   },
 });
