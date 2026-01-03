@@ -1,0 +1,29 @@
+diff --git a/frontend/app/child/puzzle-game.tsx b/frontend/app/child/puzzle-game.tsx
+index be52acd..ff658e9 100644
+--- a/frontend/app/child/puzzle-game.tsx
++++ b/frontend/app/child/puzzle-game.tsx
+@@ -103,19 +103,11 @@ export default function PuzzleGame() {
+   };
+ 
+   const playCelebration = () => {
+-    Animated.sequence([
+-      Animated.timing(confettiAnim, {
+-        toValue: 1,
+-        duration: 500,
+-        useNativeDriver: true,
+-      }),
+-      Animated.timing(confettiAnim, {
+-        toValue: 0,
+-        duration: 500,
+-        delay: 2000,
+-        useNativeDriver: true,
+-      }),
+-    ]).start();
++    Animated.timing(confettiAnim, {
++      toValue: 1,
++      duration: 500,
++      useNativeDriver: true,
++    }).start();
+   };
+ 
+   const formatTime = (seconds: number) => {
