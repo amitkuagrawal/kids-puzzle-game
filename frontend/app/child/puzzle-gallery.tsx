@@ -183,19 +183,21 @@ export default function PuzzleGallery() {
             >
               {processing ? (
                 <>
-                  <ActivityIndicator size="large" color="white" />
-                  <Text style={styles.uploadText}>Processing your picture...</Text>
+                  <ActivityIndicator size="small" color="white" />
+                  <Text style={styles.uploadText}>Processing...</Text>
                 </>
               ) : uploading ? (
                 <>
-                  <ActivityIndicator size="large" color="white" />
+                  <ActivityIndicator size="small" color="white" />
                   <Text style={styles.uploadText}>Uploading...</Text>
                 </>
               ) : (
                 <>
-                  <Ionicons name="camera" size={60} color="white" />
-                  <Text style={styles.uploadTitle}>Upload Your Own Picture!</Text>
-                  <Text style={styles.uploadSubtitle}>Make a puzzle from your photos</Text>
+                  <Ionicons name="camera" size={40} color="white" />
+                  <View style={styles.uploadTextContainer}>
+                    <Text style={styles.uploadTitle}>Upload Your Picture</Text>
+                    <Text style={styles.uploadSubtitle}>Make your own puzzle</Text>
+                  </View>
                 </>
               )}
             </TouchableOpacity>
