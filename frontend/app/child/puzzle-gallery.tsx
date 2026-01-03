@@ -347,7 +347,7 @@ export default function PuzzleGallery() {
                 activeOpacity={0.7}
               >
                 <Image
-                  source={{ uri: puzzle.image_base64 }}
+                  source={{ uri: getImageUri(puzzle.image_base64) }}
                   style={styles.puzzleGridImage}
                   resizeMode="cover"
                 />
