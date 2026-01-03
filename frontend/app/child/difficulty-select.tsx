@@ -131,17 +131,6 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
     paddingTop: 30,
   },
-  titleContainer: {
-    alignItems: 'center',
-    marginTop: 30,
-    marginBottom: 30,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#4CAF50',
-    marginTop: 10,
-  },
   optionsContainer: {
     paddingHorizontal: 20,
     gap: 20,
