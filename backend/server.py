@@ -43,6 +43,8 @@ class PuzzleImageResponse(BaseModel):
     name: str
     image_base64: str
     created_at: datetime
+    category: Optional[str] = None
+    is_preloaded: bool = False
 
 class Score(BaseModel):
     id: Optional[str] = None
