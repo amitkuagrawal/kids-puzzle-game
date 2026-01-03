@@ -150,6 +150,96 @@ backend:
         agent: "testing"
         comment: "TESTED: DELETE /api/puzzles/{puzzle_id} endpoint working perfectly. Successfully deletes puzzles by valid ObjectId. Returns 200 with success message. Correctly handles non-existent puzzles and invalid ObjectId formats (proper error logging). Verified deletion by confirming puzzle no longer appears in GET /api/puzzles."
 
+  - task: "Create category endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "POST /api/categories endpoint created to create new categories with name, icon, and color. Validates unique category names and stores in MongoDB categories collection."
+      - working: true
+        agent: "testing"
+        comment: "TESTED: POST /api/categories endpoint working perfectly. Successfully created Flags category (🏳️, #FF9800) and Vehicles category (🚗, #2196F3). Correctly rejects duplicate category names with 400 error. Returns proper CategoryResponse with id, name, icon, color, image_count=0, and created_at."
+
+  - task: "Get all categories endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "GET /api/categories endpoint created to fetch all categories with image counts. Counts images in each category and returns CategoryResponse objects sorted by created_at."
+      - working: true
+        agent: "testing"
+        comment: "TESTED: GET /api/categories endpoint working perfectly. Successfully fetched 3 categories including newly created ones. Correctly shows image_count=0 for new categories. Returns proper structure with id, name, icon, color, image_count, and created_at fields."
+
+  - task: "Delete category endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "DELETE /api/categories/{category_id} endpoint created to delete categories. Updates images in deleted category to become uncategorized (category=None)."
+      - working: true
+        agent: "testing"
+        comment: "TESTED: DELETE /api/categories/{category_id} endpoint working perfectly. Successfully deleted Flags category and verified that Test Flag Puzzle became uncategorized. Images properly moved to Uncategorized section in preloaded puzzles response."
+
+  - task: "Bulk upload puzzles endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "POST /api/puzzles/bulk endpoint created to upload multiple images to a category at once. Accepts category name and array of images with name and base64 data."
+      - working: true
+        agent: "testing"
+        comment: "TESTED: POST /api/puzzles/bulk endpoint working perfectly. Successfully uploaded 2 test images (Test Car, Test Truck) to Vehicles category. Returns success message with count and array of uploaded items with id and name."
+
+  - task: "Get preloaded puzzles by category endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "GET /api/puzzles/preloaded endpoint created to fetch all preloaded puzzles organized by category. Returns categorized structure with category metadata (icon, color) and puzzles array."
+      - working: true
+        agent: "testing"
+        comment: "TESTED: GET /api/puzzles/preloaded endpoint working perfectly. Successfully organized puzzles by category (Vehicles: 2 puzzles, Flags: 1 puzzle). Correctly includes category metadata (icon, color) and shows Uncategorized section after category deletion."
+
+  - task: "Get puzzles by category endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "GET /api/puzzles/category/{category_name} endpoint created to fetch all puzzles in a specific category. Returns array of PuzzleImageResponse objects filtered by category."
+      - working: true
+        agent: "testing"
+        comment: "TESTED: GET /api/puzzles/category/{category_name} endpoint working perfectly. Successfully fetched 2 puzzles from Vehicles category (Test Car, Test Truck). Returns proper PuzzleImageResponse structure with id, name, image_base64, created_at, category, and is_preloaded fields."
+
 frontend:
   - task: "Home screen with navigation"
     implemented: true
