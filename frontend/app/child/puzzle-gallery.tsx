@@ -759,7 +759,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
     padding: 25,
-    maxHeight: '60%',
+    maxHeight: '70%',
   },
   categoryModalTitle: {
     fontSize: 24,
@@ -768,14 +768,31 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   categoryModalSubtitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#666',
     textAlign: 'center',
-    marginTop: 8,
-    marginBottom: 20,
+    marginTop: 5,
+    marginBottom: 15,
+  },
+  customCategoryContainer: {
+    marginBottom: 10,
+  },
+  customCategoryInput: {
+    backgroundColor: '#f5f5f5',
+    borderRadius: 12,
+    padding: 15,
+    fontSize: 16,
+    borderWidth: 2,
+    borderColor: '#e0e0e0',
+  },
+  orText: {
+    textAlign: 'center',
+    color: '#999',
+    fontSize: 14,
+    marginVertical: 10,
   },
   categoryList: {
-    maxHeight: 250,
+    maxHeight: 180,
   },
   categoryOption: {
     flexDirection: 'row',
