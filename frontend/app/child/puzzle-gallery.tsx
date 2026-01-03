@@ -238,7 +238,7 @@ export default function PuzzleGallery() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFE5E5',
+    backgroundColor: '#FFD93D',
   },
   header: {
     flexDirection: 'row',
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
   uploadCard: {
-    backgroundColor: '#FF6B6B',
+    backgroundColor: '#4ECDC4',
     borderRadius: 15,
     padding: 20,
     alignItems: 'center',
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
   },
   emptySubText: {
     fontSize: 18,
-    color: '#999',
+    color: '#666',
     marginTop: 10,
     textAlign: 'center',
   },
