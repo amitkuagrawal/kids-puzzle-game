@@ -447,7 +447,25 @@ export default function PuzzleGallery() {
         <View style={styles.categoryModalOverlay}>
           <View style={styles.categoryModalContent}>
             <Text style={styles.categoryModalTitle}>Choose a Category</Text>
-            <Text style={styles.categoryModalSubtitle}>Where do you want to save this picture?</Text>
+            <Text style={styles.categoryModalSubtitle}>Select or create a new category</Text>
+            
+            {/* Custom Category Input */}
+            <View style={styles.customCategoryContainer}>
+              <TextInput
+                style={styles.customCategoryInput}
+                placeholder="Type new category name..."
+                placeholderTextColor="#999"
+                value={customCategoryName}
+                onChangeText={(text) => {
+                  setCustomCategoryName(text);
+                  if (text.trim()) {
+                    setSelectedCategory(''); // Clear selection when typing custom
+                  }
+                }}
+              />
+            </View>
+            
+            <Text style={styles.orText}>— or select existing —</Text>
             
             <ScrollView style={styles.categoryList}>
               {availableLocalCategories.map((cat) => (
@@ -455,17 +473,20 @@ export default function PuzzleGallery() {
                   key={cat}
                   style={[
                     styles.categoryOption,
-                    selectedCategory === cat && styles.categoryOptionSelected
+                    selectedCategory === cat && !customCategoryName && styles.categoryOptionSelected
                   ]}
-                  onPress={() => setSelectedCategory(cat)}
+                  onPress={() => {
+                    setSelectedCategory(cat);
+                    setCustomCategoryName(''); // Clear custom when selecting
+                  }}
                 >
                   <Text style={[
                     styles.categoryOptionText,
-                    selectedCategory === cat && styles.categoryOptionTextSelected
+                    selectedCategory === cat && !customCategoryName && styles.categoryOptionTextSelected
                   ]}>
                     {cat === 'My Pictures' ? '📱 ' : '📁 '}{cat}
                   </Text>
-                  {selectedCategory === cat && (
+                  {selectedCategory === cat && !customCategoryName && (
                     <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />
                   )}
                 </TouchableOpacity>
@@ -478,6 +499,7 @@ export default function PuzzleGallery() {
                 onPress={() => {
                   setShowCategoryModal(false);
                   setPendingBase64(null);
+                  setCustomCategoryName('');
                 }}
               >
                 <Text style={styles.cancelButtonText}>Cancel</Text>
