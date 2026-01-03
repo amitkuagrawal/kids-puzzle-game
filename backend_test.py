@@ -12,7 +12,7 @@ import sys
 import os
 
 # Backend URL from environment
-BACKEND_URL = "https://puzzlejoy-4.preview.emergentagent.com/api"
+BACKEND_URL = "https://jigsawfun-2.preview.emergentagent.com/api"
 
 def create_test_base64_image():
     """Create a small test base64 image (1x1 pixel PNG)"""
