@@ -573,6 +573,51 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
   },
+  scoreboardContainer: {
+    width: '100%',
+    marginTop: 20,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 15,
+    padding: 15,
+    maxHeight: 250,
+  },
+  scoreboardTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  scoreboardList: {
+    maxHeight: 200,
+  },
+  scoreboardEntry: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 8,
+  },
+  scoreboardRank: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FF6B6B',
+    width: 40,
+  },
+  scoreboardDetails: {
+    flex: 1,
+  },
+  scoreboardScore: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  scoreboardInfo: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 2,
+  },
   completionButtons: {
     width: '100%',
     gap: 15,
