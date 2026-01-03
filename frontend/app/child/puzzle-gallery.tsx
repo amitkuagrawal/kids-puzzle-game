@@ -86,15 +86,22 @@ export default function PuzzleGallery() {
     }
   };
 
-  const selectPuzzle = async (puzzle: Puzzle | LocalPuzzle, isLocal: boolean = false) => {
+  const selectPuzzle = async (puzzle: Puzzle | LocalPuzzle | any, isLocal: boolean = false) => {
     try {
       let imageBase64 = '';
       
       if (isLocal) {
-        // Get base64 from local file
-        imageBase64 = await getImageAsBase64((puzzle as LocalPuzzle).imageUri);
+        // Get base64 from local file - handle both LocalPuzzle type and converted puzzle
+        const imageUri = (puzzle as LocalPuzzle).imageUri || puzzle._localImageUri || puzzle.image_base64;
+        imageBase64 = await getImageAsBase64(imageUri);
       } else {
-        imageBase64 = (puzzle as Puzzle).image_base64;
+        // For server puzzles, use the image_base64 field directly (with proper formatting)
+        const rawImage = (puzzle as Puzzle).image_base64;
+        imageBase64 = rawImage.startsWith('data:') ? rawImage : `data:image/jpeg;base64,${rawImage}`;
+      }
+      
+      if (!imageBase64) {
+        throw new Error('Could not load image');
       }
       
       router.push({
