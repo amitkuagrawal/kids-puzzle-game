@@ -9,6 +9,8 @@ import {
   Animated,
   Alert,
   ScrollView,
+  Modal,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
