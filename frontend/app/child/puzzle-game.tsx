@@ -47,6 +47,7 @@ export default function PuzzleGame() {
   const [moves, setMoves] = useState(0);
   const [showPreview, setShowPreview] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
+  const [topScores, setTopScores] = useState<ScoreEntry[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const confettiAnim = useRef(new Animated.Value(0)).current;
 
