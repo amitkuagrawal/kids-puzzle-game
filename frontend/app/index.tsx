@@ -115,6 +115,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: '100%',
     height: '100%',
+    pointerEvents: 'none',
   },
   star1: {
     position: 'absolute',
