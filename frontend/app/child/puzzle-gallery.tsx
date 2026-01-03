@@ -31,6 +31,8 @@ export default function PuzzleGallery() {
   const router = useRouter();
   const [puzzles, setPuzzles] = useState<Puzzle[]>([]);
   const [loading, setLoading] = useState(true);
+  const [processing, setProcessing] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     fetchPuzzles();
