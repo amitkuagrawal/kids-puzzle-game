@@ -96,7 +96,7 @@ export default function DifficultySelect() {
               onPress={() => startGame(diff.level, diff.pieces)}
               activeOpacity={0.8}
             >
-              <Ionicons name={diff.icon as any} size={70} color="white" />
+              <Ionicons name={diff.icon as any} size={50} color="white" />
               <Text style={styles.difficultyLabel}>{diff.label}</Text>
               <Text style={styles.difficultyDescription}>{diff.description}</Text>
             </TouchableOpacity>
