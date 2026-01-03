@@ -411,18 +411,17 @@ export default function PuzzleGallery() {
             >
               {processing ? (
                 <View style={styles.uploadContent}>
-                  <ActivityIndicator size="large" color="white" />
+                  <ActivityIndicator size="small" color="white" />
                   <Text style={styles.uploadText}>Processing...</Text>
                 </View>
               ) : (
                 <View style={styles.uploadContent}>
                   <View style={styles.uploadIconContainer}>
-                    <Ionicons name="camera" size={50} color="white" />
+                    <Ionicons name="camera" size={28} color="white" />
                   </View>
                   <View style={styles.uploadTextContainer}>
-                    <Text style={styles.uploadTitle}>Upload Your Picture</Text>
+                    <Text style={styles.uploadTitle}>Upload Picture</Text>
                     <Text style={styles.uploadSubtitle}>Create your own puzzle!</Text>
-                    <Text style={styles.uploadHint}>Saved on your device</Text>
                   </View>
                 </View>
               )}
@@ -430,7 +429,7 @@ export default function PuzzleGallery() {
           </View>
 
           {/* Bottom padding */}
-          <View style={{ height: 30 }} />
+          <View style={{ height: 20 }} />
         </ScrollView>
       )}
 
