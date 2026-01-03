@@ -93,9 +93,6 @@ export default function DifficultySelect() {
               <Ionicons name={diff.icon as any} size={70} color="white" />
               <Text style={styles.difficultyLabel}>{diff.label}</Text>
               <Text style={styles.difficultyDescription}>{diff.description}</Text>
-              <View style={styles.playButton}>
-                <Ionicons name="play" size={30} color="white" />
-              </View>
             </TouchableOpacity>
           ))}
         </View>
