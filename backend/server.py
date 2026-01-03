@@ -464,12 +464,24 @@ async def get_analytics_metrics(days: int = 7):
 async def root():
     return {"message": "Puzzle API is running"}
 
-# Web Analytics Dashboard
+# Web Admin Dashboard (Analytics + Image Management)
+@api_router.get("/admin-dashboard", response_class=HTMLResponse)
+async def admin_dashboard():
+    """Serve the web admin dashboard for app creators"""
+    try:
+        dashboard_path = Path(__file__).parent / "admin_dashboard.html"
+        with open(dashboard_path, 'r') as f:
+            return HTMLResponse(content=f.read())
+    except Exception as e:
+        logging.error(f"Error serving admin dashboard: {e}")
+        return HTMLResponse(content="<h1>Admin Dashboard Not Found</h1>", status_code=500)
+
+# Keep old analytics-dashboard URL for backwards compatibility
 @api_router.get("/analytics-dashboard", response_class=HTMLResponse)
 async def analytics_dashboard():
-    """Serve the web analytics dashboard for app creators"""
+    """Redirect to admin dashboard for backwards compatibility"""
     try:
-        dashboard_path = Path(__file__).parent / "analytics_dashboard.html"
+        dashboard_path = Path(__file__).parent / "admin_dashboard.html"
         with open(dashboard_path, 'r') as f:
             return HTMLResponse(content=f.read())
     except Exception as e:
