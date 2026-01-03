@@ -522,6 +522,9 @@ const styles = StyleSheet.create({
   playAgainButton: {
     backgroundColor: '#4CAF50',
   },
+  newPuzzleButton: {
+    backgroundColor: '#FF9800',
+  },
   homeButton: {
     backgroundColor: '#2196F3',
   },
