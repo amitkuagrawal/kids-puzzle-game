@@ -60,13 +60,6 @@ export default function DifficultySelect() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Decorative stars */}
-      <View style={styles.decoration}>
-        <Ionicons name="star" size={25} color="#FFD700" style={styles.star1} />
-        <Ionicons name="star" size={30} color="#FF69B4" style={styles.star2} />
-        <Ionicons name="star" size={20} color="#87CEEB" style={styles.star3} />
-      </View>
-
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
