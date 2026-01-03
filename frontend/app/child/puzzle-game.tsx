@@ -117,8 +117,19 @@ export default function PuzzleGame() {
       setIsComplete(true);
       if (timerRef.current) clearInterval(timerRef.current);
       
-      // Save score only
+      // Calculate score and track completion
       const finalScore = calculateScore();
+      
+      // Track puzzle completion analytics
+      Analytics.puzzleCompleted(
+        puzzleId as string, 
+        difficulty as string, 
+        timer, 
+        moves, 
+        finalScore
+      );
+      
+      // Save score
       await saveScore(finalScore);
       
       playCelebration();
