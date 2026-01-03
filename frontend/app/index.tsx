@@ -191,8 +191,12 @@ export default function Index() {
         <Text style={styles.subtitle}>For Kids 5-8 Years</Text>
       </View>
 
-      {/* Animated Puzzle Demo */}
-      <View style={styles.puzzleDemo}>
+      {/* Animated Puzzle Demo - Clickable */}
+      <TouchableOpacity 
+        style={styles.puzzleDemo}
+        onPress={() => router.push('/child/puzzle-gallery')}
+        activeOpacity={0.8}
+      >
         <Text style={styles.demoText}>📸 Upload Your Fav Picture!</Text>
         <View style={styles.puzzleContainer}>
           <Animated.View style={[styles.puzzlePiece, styles.piece1, piece1Style]}>
@@ -209,7 +213,8 @@ export default function Index() {
           </Animated.View>
         </View>
         <Text style={styles.demoText}>🧩 Solve the Puzzle!</Text>
-      </View>
+        <Text style={styles.tapHint}>Tap to start!</Text>
+      </TouchableOpacity>
 
       {/* Buttons */}
       <View style={styles.buttonContainer}>
