@@ -35,7 +35,7 @@ interface ScoreEntry {
 export default function PuzzleGame() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { puzzleName, imageBase64, difficulty, pieces } = params;
+  const { puzzleId, puzzleName, imageBase64, difficulty, pieces } = params;
   
   const numPieces = parseInt(pieces as string);
   const cols = difficulty === 'easy' ? 3 : difficulty === 'medium' ? 3 : 4;
