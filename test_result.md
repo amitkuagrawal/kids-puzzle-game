@@ -107,39 +107,48 @@ user_problem_statement: "Build a children's puzzle app (ages 5-8) where admins u
 backend:
   - task: "Upload puzzle image endpoint"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "POST /api/puzzles endpoint created to accept puzzle name and base64 image. Stores in MongoDB puzzles collection. Returns puzzle ID, name, image_base64, and created_at timestamp."
+      - working: true
+        agent: "testing"
+        comment: "TESTED: POST /api/puzzles endpoint working perfectly. Successfully uploaded puzzle with base64 image, received correct response with id, name, image_base64, and created_at. All required fields present. Validation working for missing fields (422 error). Accepts empty names as implementation choice."
 
   - task: "Get all puzzles endpoint"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "GET /api/puzzles endpoint created to fetch all puzzles from MongoDB. Returns array of puzzle objects with id, name, image_base64, and created_at. Tested with curl and returns empty array correctly."
+      - working: true
+        agent: "testing"
+        comment: "TESTED: GET /api/puzzles endpoint working perfectly. Successfully fetches all puzzles with correct structure. Returns empty array when no puzzles exist. Correctly shows uploaded puzzles with all required fields (id, name, image_base64, created_at). Sorting by created_at works correctly."
 
   - task: "Delete puzzle endpoint"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "DELETE /api/puzzles/{puzzle_id} endpoint created to delete puzzle by ID. Uses ObjectId for MongoDB lookup. Returns success message or 404 if not found."
+      - working: true
+        agent: "testing"
+        comment: "TESTED: DELETE /api/puzzles/{puzzle_id} endpoint working perfectly. Successfully deletes puzzles by valid ObjectId. Returns 200 with success message. Correctly handles non-existent puzzles and invalid ObjectId formats (proper error logging). Verified deletion by confirming puzzle no longer appears in GET /api/puzzles."
 
 frontend:
   - task: "Home screen with navigation"
