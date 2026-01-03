@@ -7,13 +7,11 @@ import {
   Image,
   Dimensions,
   Animated,
-  PanResponder,
   Alert,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Audio } from 'expo-av';
 
 const { width, height } = Dimensions.get('window');
 const PUZZLE_SIZE = width - 40;
@@ -35,6 +33,7 @@ export default function PuzzleGame() {
   const rows = Math.ceil(numPieces / cols);
   
   const [puzzlePieces, setPuzzlePieces] = useState<PuzzlePiece[]>([]);
+  const [selectedPiece, setSelectedPiece] = useState<number | null>(null);
   const [timer, setTimer] = useState(0);
   const [moves, setMoves] = useState(0);
   const [showPreview, setShowPreview] = useState(false);
