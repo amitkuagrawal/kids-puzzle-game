@@ -41,15 +41,6 @@ export default function Index() {
           <Ionicons name="game-controller" size={50} color="white" />
           <Text style={styles.buttonText}>Play Puzzle!</Text>
         </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={[styles.button, styles.adminButton]}
-          onPress={() => router.push('/admin/manage')}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="settings" size={40} color="white" />
-          <Text style={styles.buttonTextSmall}>Admin Panel</Text>
-        </TouchableOpacity>
       </View>
     </View>
   );
