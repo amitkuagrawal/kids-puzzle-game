@@ -191,6 +191,26 @@ export default function Index() {
         <Text style={styles.subtitle}>For Kids 5-8 Years</Text>
       </View>
 
+      {/* Animated Puzzle Demo */}
+      <View style={styles.puzzleDemo}>
+        <Text style={styles.demoText}>📸 Upload a Picture</Text>
+        <View style={styles.puzzleContainer}>
+          <Animated.View style={[styles.puzzlePiece, styles.piece1, piece1Style]}>
+            <Ionicons name="image" size={40} color="#4CAF50" />
+          </Animated.View>
+          <Animated.View style={[styles.puzzlePiece, styles.piece2, piece2Style]}>
+            <Ionicons name="image" size={40} color="#2196F3" />
+          </Animated.View>
+          <Animated.View style={[styles.puzzlePiece, styles.piece3, piece3Style]}>
+            <Ionicons name="image" size={40} color="#FF9800" />
+          </Animated.View>
+          <Animated.View style={[styles.puzzlePiece, styles.piece4, piece4Style]}>
+            <Ionicons name="image" size={40} color="#9C27B0" />
+          </Animated.View>
+        </View>
+        <Text style={styles.demoText}>🧩 Solve the Puzzle!</Text>
+      </View>
+
       {/* Buttons */}
       <View style={styles.buttonContainer}>
         <TouchableOpacity 
