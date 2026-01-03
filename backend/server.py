@@ -258,6 +258,18 @@ async def get_analytics_metrics(days: int = 7):
 async def root():
     return {"message": "Puzzle API is running"}
 
+# Web Analytics Dashboard
+@app.get("/analytics-dashboard", response_class=HTMLResponse)
+async def analytics_dashboard():
+    """Serve the web analytics dashboard for app creators"""
+    try:
+        dashboard_path = Path(__file__).parent / "analytics_dashboard.html"
+        with open(dashboard_path, 'r') as f:
+            return HTMLResponse(content=f.read())
+    except Exception as e:
+        logging.error(f"Error serving analytics dashboard: {e}")
+        return HTMLResponse(content="<h1>Analytics Dashboard Not Found</h1>", status_code=500)
+
 # Include the router in the main app
 app.include_router(api_router)
 
