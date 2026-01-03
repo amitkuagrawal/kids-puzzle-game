@@ -60,6 +60,13 @@ export default function DifficultySelect() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Decorative stars */}
+      <View style={styles.decoration}>
+        <Ionicons name="star" size={25} color="#FFD700" style={styles.star1} />
+        <Ionicons name="star" size={30} color="#FF69B4" style={styles.star2} />
+        <Ionicons name="star" size={20} color="#87CEEB" style={styles.star3} />
+      </View>
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
@@ -69,37 +76,37 @@ export default function DifficultySelect() {
         <View style={styles.placeholder} />
       </View>
 
-      {/* Title */}
-      <View style={styles.titleContainer}>
-        <Ionicons name="trophy" size={60} color="#FFD700" />
-        <Text style={styles.title}>Pick Your Challenge!</Text>
-      </View>
+      {/* Scrollable Content */}
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Title */}
+        <View style={styles.titleContainer}>
+          <Ionicons name="trophy" size={60} color="#FFD700" />
+          <Text style={styles.title}>Pick Your Challenge!</Text>
+        </View>
 
-      {/* Difficulty Options */}
-      <View style={styles.optionsContainer}>
-        {difficulties.map((diff, index) => (
-          <TouchableOpacity
-            key={diff.level}
-            style={[styles.difficultyCard, { backgroundColor: diff.color }]}
-            onPress={() => startGame(diff.level, diff.pieces)}
-            activeOpacity={0.8}
-          >
-            <Ionicons name={diff.icon as any} size={70} color="white" />
-            <Text style={styles.difficultyLabel}>{diff.label}</Text>
-            <Text style={styles.difficultyDescription}>{diff.description}</Text>
-            <View style={styles.playButton}>
-              <Ionicons name="play" size={30} color="white" />
-            </View>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* Decorative stars */}
-      <View style={styles.decoration}>
-        <Ionicons name="star" size={25} color="#FFD700" style={styles.star1} />
-        <Ionicons name="star" size={30} color="#FF69B4" style={styles.star2} />
-        <Ionicons name="star" size={20} color="#87CEEB" style={styles.star3} />
-      </View>
+        {/* Difficulty Options */}
+        <View style={styles.optionsContainer}>
+          {difficulties.map((diff, index) => (
+            <TouchableOpacity
+              key={diff.level}
+              style={[styles.difficultyCard, { backgroundColor: diff.color }]}
+              onPress={() => startGame(diff.level, diff.pieces)}
+              activeOpacity={0.8}
+            >
+              <Ionicons name={diff.icon as any} size={70} color="white" />
+              <Text style={styles.difficultyLabel}>{diff.label}</Text>
+              <Text style={styles.difficultyDescription}>{diff.description}</Text>
+              <View style={styles.playButton}>
+                <Ionicons name="play" size={30} color="white" />
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
