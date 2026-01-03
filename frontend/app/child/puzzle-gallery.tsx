@@ -199,8 +199,6 @@ export default function PuzzleGallery() {
     return acc;
   }, {} as Record<string, LocalPuzzle[]>);
 
-  const availableLocalCategories = ['My Pictures', ...Object.keys(localCategories).filter(c => c !== 'My Pictures')];
-
   // Helper function to ensure image URI is properly formatted
   const getImageUri = (imageData: string): string => {
     if (!imageData) return '';
