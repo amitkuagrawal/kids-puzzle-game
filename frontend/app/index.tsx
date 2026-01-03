@@ -10,6 +10,13 @@ export default function Index() {
 
   return (
     <View style={styles.container}>
+      {/* Decorative elements - moved to background with pointerEvents none */}
+      <View style={styles.decoration} pointerEvents="none">
+        <Ionicons name="star" size={30} color="#FFD700" style={styles.star1} />
+        <Ionicons name="star" size={25} color="#FF69B4" style={styles.star2} />
+        <Ionicons name="star" size={35} color="#87CEEB" style={styles.star3} />
+      </View>
+
       {/* Title */}
       <View style={styles.titleContainer}>
         <Ionicons name="game-controller" size={80} color="#FFD700" />
@@ -36,13 +43,6 @@ export default function Index() {
           <Ionicons name="settings" size={40} color="white" />
           <Text style={styles.buttonTextSmall}>Admin Panel</Text>
         </TouchableOpacity>
-      </View>
-
-      {/* Decorative elements */}
-      <View style={styles.decoration}>
-        <Ionicons name="star" size={30} color="#FFD700" style={styles.star1} />
-        <Ionicons name="star" size={25} color="#FF69B4" style={styles.star2} />
-        <Ionicons name="star" size={35} color="#87CEEB" style={styles.star3} />
       </View>
     </View>
   );
