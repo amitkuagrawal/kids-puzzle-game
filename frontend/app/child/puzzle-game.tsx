@@ -111,13 +111,19 @@ export default function PuzzleGame() {
       setIsComplete(true);
       if (timerRef.current) clearInterval(timerRef.current);
       
-      // Save score and fetch top scores
+      // Save score only
       const finalScore = calculateScore();
       await saveScore(finalScore);
-      await fetchTopScores();
       
       playCelebration();
     }
+  };
+
+  const handleViewScoreboard = async () => {
+    if (!showScoreboard) {
+      await fetchTopScores();
+    }
+    setShowScoreboard(!showScoreboard);
   };
 
   const saveScore = async (score: number) => {
