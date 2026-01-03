@@ -12,7 +12,7 @@ export default function Index() {
     <View style={styles.container}>
       {/* Title */}
       <View style={styles.titleContainer}>
-        <Ionicons name="puzzle" size={80} color="#FFD700" />
+        <Ionicons name="game-controller" size={80} color="#FFD700" />
         <Text style={styles.title}>Puzzle Fun!</Text>
         <Text style={styles.subtitle}>For Kids 5-8 Years</Text>
       </View>
