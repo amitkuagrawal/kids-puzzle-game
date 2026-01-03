@@ -68,6 +68,22 @@ class ScoreResponse(BaseModel):
     score: int
     created_at: datetime
 
+class AnalyticsEvent(BaseModel):
+    id: Optional[str] = None
+    event_type: str
+    event_data: dict
+    session_id: Optional[str] = None
+    user_id: Optional[str] = None
+    device_type: Optional[str] = None
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+class AnalyticsEventCreate(BaseModel):
+    event_type: str
+    event_data: dict
+    session_id: Optional[str] = None
+    user_id: Optional[str] = None
+    device_type: Optional[str] = None
+
 # Puzzle Image Routes
 @api_router.post("/puzzles", response_model=PuzzleImageResponse)
 async def create_puzzle(puzzle: PuzzleImageCreate):
