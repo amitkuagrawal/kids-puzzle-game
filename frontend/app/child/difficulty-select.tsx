@@ -186,26 +186,4 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     padding: 10,
   },
-  decoration: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    pointerEvents: 'none',
-    zIndex: -1,
-  },
-  star1: {
-    position: 'absolute',
-    top: 120,
-    left: 20,
-  },
-  star2: {
-    position: 'absolute',
-    top: 200,
-    right: 30,
-  },
-  star3: {
-    position: 'absolute',
-    bottom: 150,
-    left: 40,
-  },
 });
