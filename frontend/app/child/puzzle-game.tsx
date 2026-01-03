@@ -59,6 +59,9 @@ export default function PuzzleGame() {
   useEffect(() => {
     initializePuzzle();
     startTimer();
+    
+    // Track puzzle started
+    Analytics.puzzleStarted(puzzleId as string, difficulty as string, numPieces);
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
