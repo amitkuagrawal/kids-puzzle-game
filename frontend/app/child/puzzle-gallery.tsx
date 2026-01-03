@@ -108,16 +108,12 @@ export default function PuzzleGallery() {
     }
   };
 
-  const toggleCategory = (category: string) => {
-    setExpandedCategories(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(category)) {
-        newSet.delete(category);
-      } else {
-        newSet.add(category);
-      }
-      return newSet;
-    });
+  const openCategoryView = (category: CategoryData) => {
+    setSelectedServerCategory(category);
+  };
+
+  const closeCategoryView = () => {
+    setSelectedServerCategory(null);
   };
 
   const pickImage = async () => {
