@@ -399,6 +399,46 @@ export default function PuzzleGame() {
           </View>
         </Animated.View>
       )}
+
+      {/* Scoreboard Modal */}
+      <Modal
+        visible={showScoreboard}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowScoreboard(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setShowScoreboard(false)}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
+              <View style={styles.modalContent}>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>🏆 Top 10 Scores</Text>
+                  <TouchableOpacity 
+                    onPress={() => setShowScoreboard(false)}
+                    style={styles.closeButton}
+                  >
+                    <Ionicons name="close-circle" size={32} color="#666" />
+                  </TouchableOpacity>
+                </View>
+                
+                <ScrollView style={styles.modalScoreboardList}>
+                  {topScores.map((entry, index) => (
+                    <View key={entry.id} style={styles.modalScoreboardEntry}>
+                      <Text style={styles.modalScoreboardRank}>#{index + 1}</Text>
+                      <View style={styles.modalScoreboardDetails}>
+                        <Text style={styles.modalScoreboardScore}>{entry.score} pts</Text>
+                        <Text style={styles.modalScoreboardInfo}>
+                          {formatTime(entry.time_seconds)} • {entry.moves} moves
+                        </Text>
+                      </View>
+                    </View>
+                  ))}
+                </ScrollView>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </SafeAreaView>
   );
 }
