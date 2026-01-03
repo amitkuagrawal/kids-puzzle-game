@@ -10,8 +10,8 @@ export default function Index() {
 
   return (
     <View style={styles.container}>
-      {/* Decorative elements - moved to background with pointerEvents none */}
-      <View style={styles.decoration} pointerEvents="none">
+      {/* Decorative elements - moved to background with pointerEvents in styles */}
+      <View style={styles.decoration}>
         <Ionicons name="star" size={30} color="#FFD700" style={styles.star1} />
         <Ionicons name="star" size={25} color="#FF69B4" style={styles.star2} />
         <Ionicons name="star" size={35} color="#87CEEB" style={styles.star3} />
