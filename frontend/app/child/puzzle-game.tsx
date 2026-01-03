@@ -393,6 +393,21 @@ const styles = StyleSheet.create({
     height: 150,
     borderRadius: 10,
   },
+  instructionContainer: {
+    backgroundColor: '#FFD700',
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    marginHorizontal: 20,
+    marginTop: 10,
+    borderRadius: 15,
+    alignItems: 'center',
+  },
+  instructionText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    textAlign: 'center',
+  },
   puzzleContainer: {
     flex: 1,
     alignItems: 'center',
