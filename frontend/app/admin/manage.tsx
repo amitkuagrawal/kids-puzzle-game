@@ -31,6 +31,7 @@ export default function AdminManage() {
   const [puzzles, setPuzzles] = useState<Puzzle[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
     fetchPuzzles();
