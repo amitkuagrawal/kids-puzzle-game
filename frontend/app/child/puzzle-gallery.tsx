@@ -45,10 +45,6 @@ export default function PuzzleGallery() {
   const [localPuzzles, setLocalPuzzles] = useState<LocalPuzzle[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
-  const [showCategoryModal, setShowCategoryModal] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('My Pictures');
-  const [customCategoryName, setCustomCategoryName] = useState('');
-  const [pendingBase64, setPendingBase64] = useState<string | null>(null);
   const [selectedServerCategory, setSelectedServerCategory] = useState<CategoryData | null>(null);
 
   useEffect(() => {
