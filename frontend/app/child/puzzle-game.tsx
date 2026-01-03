@@ -240,6 +240,15 @@ export default function PuzzleGame() {
         </View>
       )}
 
+      {/* Instructions */}
+      <View style={styles.instructionContainer}>
+        <Text style={styles.instructionText}>
+          {selectedPiece === null 
+            ? "👆 Tap a piece to select it" 
+            : "👉 Tap another piece to swap!"}
+        </Text>
+      </View>
+
       {/* Puzzle Board */}
       <View style={styles.puzzleContainer}>
         <View
