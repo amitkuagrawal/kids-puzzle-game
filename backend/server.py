@@ -120,6 +120,55 @@ async def delete_puzzle(puzzle_id: str):
         logging.error(f"Error deleting puzzle: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# Score Routes
+@api_router.post("/scores", response_model=ScoreResponse)
+async def create_score(score: ScoreCreate):
+    """Save a puzzle completion score"""
+    try:
+        score_dict = score.dict()
+        score_dict['created_at'] = datetime.utcnow()
+        
+        result = await db.scores.insert_one(score_dict)
+        score_dict['id'] = str(result.inserted_id)
+        
+        return ScoreResponse(
+            id=str(result.inserted_id),
+            puzzle_id=score_dict['puzzle_id'],
+            difficulty=score_dict['difficulty'],
+            time_seconds=score_dict['time_seconds'],
+            moves=score_dict['moves'],
+            score=score_dict['score'],
+            created_at=score_dict['created_at']
+        )
+    except Exception as e:
+        logging.error(f"Error creating score: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/scores/{puzzle_id}/{difficulty}", response_model=List[ScoreResponse])
+async def get_scores(puzzle_id: str, difficulty: str):
+    """Get last 10 scores for a specific puzzle and difficulty"""
+    try:
+        scores = await db.scores.find({
+            'puzzle_id': puzzle_id,
+            'difficulty': difficulty
+        }).sort('score', -1).limit(10).to_list(10)
+        
+        return [
+            ScoreResponse(
+                id=str(score['_id']),
+                puzzle_id=score['puzzle_id'],
+                difficulty=score['difficulty'],
+                time_seconds=score['time_seconds'],
+                moves=score['moves'],
+                score=score['score'],
+                created_at=score['created_at']
+            )
+            for score in scores
+        ]
+    except Exception as e:
+        logging.error(f"Error fetching scores: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.get("/")
 async def root():
     return {"message": "Puzzle API is running"}
