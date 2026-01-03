@@ -218,105 +218,130 @@ export default function PuzzleGallery() {
 
   const availableLocalCategories = ['My Pictures', ...Object.keys(localCategories).filter(c => c !== 'My Pictures')];
 
-  const renderCategorySection = (categoryData: CategoryData) => {
-    const isExpanded = expandedCategories.has(categoryData.category);
+  // Render a category card in grid view
+  const renderCategoryCard = (categoryData: CategoryData) => {
+    const previewImage = categoryData.puzzles.length > 0 ? categoryData.puzzles[0].image_base64 : null;
     
     return (
-      <View key={categoryData.category} style={styles.categorySection}>
-        <TouchableOpacity 
-          style={[styles.categoryHeader, { backgroundColor: categoryData.color }]}
-          onPress={() => toggleCategory(categoryData.category)}
-          activeOpacity={0.8}
-        >
-          <View style={styles.categoryTitleContainer}>
-            <Text style={styles.categoryIcon}>{categoryData.icon}</Text>
-            <Text style={styles.categoryTitle}>{categoryData.category}</Text>
-            <View style={styles.categoryBadge}>
-              <Text style={styles.categoryBadgeText}>{categoryData.puzzles.length}</Text>
-            </View>
-          </View>
-          <Ionicons 
-            name={isExpanded ? "chevron-up" : "chevron-down"} 
-            size={24} 
-            color="white" 
+      <TouchableOpacity
+        key={categoryData.category}
+        style={[styles.categoryCard, { borderColor: categoryData.color }]}
+        onPress={() => openCategoryView(categoryData)}
+        activeOpacity={0.8}
+      >
+        {previewImage ? (
+          <Image
+            source={{ uri: previewImage }}
+            style={styles.categoryPreviewImage}
+            resizeMode="cover"
           />
-        </TouchableOpacity>
-        
-        {isExpanded && (
-          <View style={styles.puzzlesRow}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {categoryData.puzzles.map((puzzle) => (
-                <TouchableOpacity
-                  key={puzzle.id}
-                  style={styles.puzzleCard}
-                  onPress={() => selectPuzzle(puzzle)}
-                  activeOpacity={0.7}
-                >
-                  <Image
-                    source={{ uri: puzzle.image_base64 }}
-                    style={styles.puzzleImage}
-                    resizeMode="cover"
-                  />
-                  <View style={styles.puzzleOverlay}>
-                    <Ionicons name="play-circle" size={32} color="white" />
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+        ) : (
+          <View style={[styles.categoryPlaceholder, { backgroundColor: categoryData.color }]}>
+            <Text style={styles.categoryPlaceholderIcon}>{categoryData.icon}</Text>
           </View>
         )}
-      </View>
+        <View style={[styles.categoryCardFooter, { backgroundColor: categoryData.color }]}>
+          <Text style={styles.categoryCardIcon}>{categoryData.icon}</Text>
+          <Text style={styles.categoryCardTitle}>{categoryData.category}</Text>
+          <Text style={styles.categoryCardCount}>{categoryData.puzzles.length}</Text>
+        </View>
+      </TouchableOpacity>
     );
   };
 
-  const renderLocalCategory = (categoryName: string, puzzles: LocalPuzzle[]) => {
-    const isExpanded = expandedCategories.has(`local_${categoryName}`);
+  // Render local pictures card
+  const renderLocalPicturesCard = () => {
+    if (localPuzzles.length === 0) return null;
+    
+    const previewImage = localPuzzles.length > 0 ? localPuzzles[0].imageUri : null;
     
     return (
-      <View key={`local_${categoryName}`} style={styles.categorySection}>
-        <TouchableOpacity 
-          style={[styles.categoryHeader, { backgroundColor: '#FDACAC' }]}
-          onPress={() => toggleCategory(`local_${categoryName}`)}
-          activeOpacity={0.8}
-        >
-          <View style={styles.categoryTitleContainer}>
-            <Text style={styles.categoryIcon}>📱</Text>
-            <Text style={styles.categoryTitle}>{categoryName}</Text>
-            <View style={styles.categoryBadge}>
-              <Text style={styles.categoryBadgeText}>{puzzles.length}</Text>
-            </View>
-          </View>
-          <Ionicons 
-            name={isExpanded ? "chevron-up" : "chevron-down"} 
-            size={24} 
-            color="white" 
+      <TouchableOpacity
+        key="local_pictures"
+        style={[styles.categoryCard, { borderColor: '#FDACAC' }]}
+        onPress={() => {
+          // Show local puzzles in a simple view
+          setSelectedServerCategory({
+            category: 'My Pictures',
+            icon: '📱',
+            color: '#FDACAC',
+            puzzles: localPuzzles.map(lp => ({
+              id: lp.id,
+              name: lp.name,
+              image_base64: lp.imageUri, // Will be handled specially
+              created_at: lp.created_at,
+            }))
+          });
+        }}
+        activeOpacity={0.8}
+      >
+        {previewImage ? (
+          <Image
+            source={{ uri: previewImage }}
+            style={styles.categoryPreviewImage}
+            resizeMode="cover"
           />
-        </TouchableOpacity>
-        
-        {isExpanded && (
-          <View style={styles.puzzlesRow}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {puzzles.map((puzzle) => (
-                <TouchableOpacity
-                  key={puzzle.id}
-                  style={styles.puzzleCard}
-                  onPress={() => selectPuzzle(puzzle, true)}
-                  activeOpacity={0.7}
-                >
-                  <Image
-                    source={{ uri: puzzle.imageUri }}
-                    style={styles.puzzleImage}
-                    resizeMode="cover"
-                  />
-                  <View style={styles.puzzleOverlay}>
-                    <Ionicons name="play-circle" size={32} color="white" />
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+        ) : (
+          <View style={[styles.categoryPlaceholder, { backgroundColor: '#FDACAC' }]}>
+            <Text style={styles.categoryPlaceholderIcon}>📱</Text>
           </View>
         )}
-      </View>
+        <View style={[styles.categoryCardFooter, { backgroundColor: '#FDACAC' }]}>
+          <Text style={styles.categoryCardIcon}>📱</Text>
+          <Text style={styles.categoryCardTitle}>My Pictures</Text>
+          <Text style={styles.categoryCardCount}>{localPuzzles.length}</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  // Render puzzle images inside a category (when category is selected)
+  const renderCategoryPuzzles = () => {
+    if (!selectedServerCategory) return null;
+    
+    const isLocalCategory = selectedServerCategory.category === 'My Pictures';
+    
+    return (
+      <Modal
+        visible={true}
+        animationType="slide"
+        onRequestClose={closeCategoryView}
+      >
+        <SafeAreaView style={styles.modalContainer} edges={['top']}>
+          {/* Header */}
+          <View style={[styles.modalHeader, { backgroundColor: selectedServerCategory.color }]}>
+            <TouchableOpacity onPress={closeCategoryView} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={28} color="white" />
+            </TouchableOpacity>
+            <View style={styles.modalHeaderTitle}>
+              <Text style={styles.modalHeaderIcon}>{selectedServerCategory.icon}</Text>
+              <Text style={styles.modalHeaderText}>{selectedServerCategory.category}</Text>
+            </View>
+            <View style={styles.placeholder} />
+          </View>
+          
+          {/* Puzzles Grid */}
+          <ScrollView style={styles.puzzlesScrollView} contentContainerStyle={styles.puzzlesGridContainer}>
+            {selectedServerCategory.puzzles.map((puzzle) => (
+              <TouchableOpacity
+                key={puzzle.id}
+                style={styles.puzzleGridCard}
+                onPress={() => {
+                  closeCategoryView();
+                  selectPuzzle(puzzle, isLocalCategory);
+                }}
+                activeOpacity={0.7}
+              >
+                <Image
+                  source={{ uri: puzzle.image_base64 }}
+                  style={styles.puzzleGridImage}
+                  resizeMode="cover"
+                />
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
     );
   };
 
@@ -339,21 +364,11 @@ export default function PuzzleGallery() {
         </View>
       ) : (
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-          {/* Server Categories (Preloaded Images) */}
-          {categories.length > 0 && (
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>🎨 Choose from Library</Text>
-              {categories.map(renderCategorySection)}
-            </View>
-          )}
-
-          {/* Local Categories (User Uploads) */}
-          {Object.keys(localCategories).length > 0 && (
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>📱 My Pictures</Text>
-              {Object.entries(localCategories).map(([catName, puzzles]) => 
-                renderLocalCategory(catName, puzzles)
-              )}
+          {/* Categories Grid */}
+          {(categories.length > 0 || localPuzzles.length > 0) && (
+            <View style={styles.categoriesGrid}>
+              {categories.map(renderCategoryCard)}
+              {renderLocalPicturesCard()}
             </View>
           )}
 
@@ -400,17 +415,20 @@ export default function PuzzleGallery() {
         </ScrollView>
       )}
 
-      {/* Category Selection Modal */}
+      {/* Category Puzzles Modal */}
+      {renderCategoryPuzzles()}
+
+      {/* Category Selection Modal for Upload */}
       <Modal
         visible={showCategoryModal}
         transparent
         animationType="slide"
         onRequestClose={() => setShowCategoryModal(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Choose a Category</Text>
-            <Text style={styles.modalSubtitle}>Where do you want to save this picture?</Text>
+        <View style={styles.categoryModalOverlay}>
+          <View style={styles.categoryModalContent}>
+            <Text style={styles.categoryModalTitle}>Choose a Category</Text>
+            <Text style={styles.categoryModalSubtitle}>Where do you want to save this picture?</Text>
             
             <ScrollView style={styles.categoryList}>
               {availableLocalCategories.map((cat) => (
@@ -435,7 +453,7 @@ export default function PuzzleGallery() {
               ))}
             </ScrollView>
 
-            <View style={styles.modalButtons}>
+            <View style={styles.categoryModalButtons}>
               <TouchableOpacity
                 style={styles.cancelButton}
                 onPress={() => {
