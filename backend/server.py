@@ -43,6 +43,31 @@ class PuzzleImageResponse(BaseModel):
     image_base64: str
     created_at: datetime
 
+class Score(BaseModel):
+    id: Optional[str] = None
+    puzzle_id: str
+    difficulty: str
+    time_seconds: int
+    moves: int
+    score: int
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class ScoreCreate(BaseModel):
+    puzzle_id: str
+    difficulty: str
+    time_seconds: int
+    moves: int
+    score: int
+
+class ScoreResponse(BaseModel):
+    id: str
+    puzzle_id: str
+    difficulty: str
+    time_seconds: int
+    moves: int
+    score: int
+    created_at: datetime
+
 # Puzzle Image Routes
 @api_router.post("/puzzles", response_model=PuzzleImageResponse)
 async def create_puzzle(puzzle: PuzzleImageCreate):
