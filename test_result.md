@@ -222,11 +222,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Admin panel - upload and manage puzzles"
-    - "Puzzle gallery for children"
-    - "Difficulty selector"
-    - "Puzzle game with drag-and-drop"
-  stuck_tasks: []
+    - "Home screen with navigation"
+  stuck_tasks:
+    - "Home screen with navigation"
   test_all: false
   test_priority: "high_first"
 
