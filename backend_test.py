@@ -137,139 +137,184 @@ def test_get_categories():
         print_result(False, f"Error fetching categories: {e}")
         return []
 
-def test_upload_puzzle():
-    """Test POST /api/puzzles - Upload a puzzle with base64 image"""
-    print("\n🔍 Testing puzzle upload (POST /api/puzzles)...")
+def test_upload_single_puzzle():
+    """Test uploading a single puzzle to Flags category"""
+    print_test_header("Upload Single Puzzle to Category")
     
-    test_image = create_test_base64_image()
     puzzle_data = {
-        "name": "Test Puzzle Rainbow",
-        "image_base64": test_image
+        "name": "Test Flag Puzzle",
+        "image_base64": TEST_IMAGE_FLAG,
+        "category": "Flags"
     }
     
     try:
-        response = requests.post(
-            f"{BACKEND_URL}/puzzles",
-            json=puzzle_data,
-            headers={"Content-Type": "application/json"}
-        )
-        
-        print(f"   Status Code: {response.status_code}")
-        
+        response = requests.post(f"{BACKEND_URL}/puzzles", json=puzzle_data)
         if response.status_code == 200:
-            data = response.json()
-            print("✅ Puzzle upload successful")
-            print(f"   Puzzle ID: {data.get('id')}")
-            print(f"   Name: {data.get('name')}")
-            print(f"   Created At: {data.get('created_at')}")
-            print(f"   Image Base64 Length: {len(data.get('image_base64', ''))}")
-            
-            # Verify required fields
-            required_fields = ['id', 'name', 'image_base64', 'created_at']
-            missing_fields = [field for field in required_fields if field not in data]
-            
-            if missing_fields:
-                print(f"❌ Missing required fields: {missing_fields}")
-                return None
-            
-            return data['id']
+            puzzle = response.json()
+            print_result(True, f"Uploaded puzzle: {puzzle['name']} to category {puzzle['category']}")
+            return puzzle['id']
         else:
-            print(f"❌ Puzzle upload failed: {response.status_code}")
-            print(f"   Response: {response.text}")
+            print_result(False, f"Failed to upload puzzle: {response.status_code} - {response.text}")
             return None
-            
     except Exception as e:
-        print(f"❌ Puzzle upload failed: {e}")
+        print_result(False, f"Error uploading puzzle: {e}")
         return None
 
+def test_bulk_upload():
+    """Test bulk uploading multiple images to Vehicles category"""
+    print_test_header("Bulk Upload to Vehicles Category")
+    
+    bulk_data = {
+        "category": "Vehicles",
+        "images": [
+            {
+                "name": "Test Car",
+                "image_base64": TEST_IMAGE_CAR
+            },
+            {
+                "name": "Test Truck",
+                "image_base64": TEST_IMAGE_TRUCK
+            }
+        ]
+    }
+    
+    try:
+        response = requests.post(f"{BACKEND_URL}/puzzles/bulk", json=bulk_data)
+        if response.status_code == 200:
+            result = response.json()
+            print_result(True, f"Bulk upload successful: {result['message']}")
+            print(f"  Uploaded items: {result['uploaded']}")
+            return [item['id'] for item in result['uploaded']]
+        else:
+            print_result(False, f"Failed bulk upload: {response.status_code} - {response.text}")
+            return []
+    except Exception as e:
+        print_result(False, f"Error in bulk upload: {e}")
+        return []
+
+def test_get_preloaded_puzzles():
+    """Test fetching preloaded puzzles organized by category"""
+    print_test_header("Get Preloaded Puzzles by Category")
+    
+    try:
+        response = requests.get(f"{BACKEND_URL}/puzzles/preloaded")
+        if response.status_code == 200:
+            categorized_puzzles = response.json()
+            print_result(True, f"Fetched preloaded puzzles organized in {len(categorized_puzzles)} categories")
+            
+            for category_group in categorized_puzzles:
+                cat_name = category_group['category']
+                puzzles_count = len(category_group['puzzles'])
+                icon = category_group.get('icon', 'N/A')
+                color = category_group.get('color', 'N/A')
+                print(f"  - {cat_name} ({icon}): {puzzles_count} puzzles (color: {color})")
+                
+                # Verify structure
+                for puzzle in category_group['puzzles'][:2]:  # Show first 2
+                    print(f"    * {puzzle['name']} (ID: {puzzle['id']})")
+            
+            return categorized_puzzles
+        else:
+            print_result(False, f"Failed to fetch preloaded puzzles: {response.status_code} - {response.text}")
+            return []
+    except Exception as e:
+        print_result(False, f"Error fetching preloaded puzzles: {e}")
+        return []
+
+def test_get_category_puzzles():
+    """Test fetching puzzles for specific category"""
+    print_test_header("Get Puzzles for Vehicles Category")
+    
+    try:
+        response = requests.get(f"{BACKEND_URL}/puzzles/category/Vehicles")
+        if response.status_code == 200:
+            vehicles_puzzles = response.json()
+            print_result(True, f"Fetched {len(vehicles_puzzles)} puzzles from Vehicles category")
+            
+            for puzzle in vehicles_puzzles:
+                print(f"  - {puzzle['name']} (ID: {puzzle['id']}, Category: {puzzle['category']})")
+            
+            return vehicles_puzzles
+        else:
+            print_result(False, f"Failed to fetch Vehicles puzzles: {response.status_code} - {response.text}")
+            return []
+    except Exception as e:
+        print_result(False, f"Error fetching Vehicles puzzles: {e}")
+        return []
+
+def test_delete_category(category_id):
+    """Test deleting a category and verify images become uncategorized"""
+    print_test_header("Delete Flags Category")
+    
+    try:
+        response = requests.delete(f"{BACKEND_URL}/categories/{category_id}")
+        if response.status_code == 200:
+            result = response.json()
+            print_result(True, f"Deleted category: {result['message']}")
+            return True
+        else:
+            print_result(False, f"Failed to delete category: {response.status_code} - {response.text}")
+            return False
+    except Exception as e:
+        print_result(False, f"Error deleting category: {e}")
+        return False
+
+def test_verify_uncategorized():
+    """Verify that deleted category's images are now uncategorized"""
+    print_test_header("Verify Images Became Uncategorized")
+    
+    try:
+        # Check preloaded puzzles for uncategorized section
+        response = requests.get(f"{BACKEND_URL}/puzzles/preloaded")
+        if response.status_code == 200:
+            categorized_puzzles = response.json()
+            
+            uncategorized_found = False
+            for category_group in categorized_puzzles:
+                if category_group['category'] == 'Uncategorized':
+                    uncategorized_found = True
+                    puzzles_count = len(category_group['puzzles'])
+                    print_result(True, f"Found Uncategorized section with {puzzles_count} puzzles")
+                    
+                    for puzzle in category_group['puzzles']:
+                        print(f"  - {puzzle['name']} (ID: {puzzle['id']})")
+                    break
+            
+            if not uncategorized_found:
+                print_result(False, "No Uncategorized section found")
+            
+        else:
+            print_result(False, f"Failed to fetch preloaded puzzles: {response.status_code}")
+    except Exception as e:
+        print_result(False, f"Error verifying uncategorized: {e}")
+
 def test_get_all_puzzles():
-    """Test GET /api/puzzles - Fetch all puzzles"""
-    print("\n🔍 Testing get all puzzles (GET /api/puzzles)...")
+    """Test that GET /api/puzzles still returns all images"""
+    print_test_header("Verify GET /api/puzzles Returns All Images")
     
     try:
         response = requests.get(f"{BACKEND_URL}/puzzles")
-        
-        print(f"   Status Code: {response.status_code}")
-        
         if response.status_code == 200:
-            data = response.json()
-            print("✅ Get all puzzles successful")
-            print(f"   Number of puzzles: {len(data)}")
+            all_puzzles = response.json()
+            print_result(True, f"GET /api/puzzles returned {len(all_puzzles)} total puzzles")
             
-            if len(data) > 0:
-                puzzle = data[0]
-                print(f"   First puzzle ID: {puzzle.get('id')}")
-                print(f"   First puzzle name: {puzzle.get('name')}")
-                print(f"   First puzzle image length: {len(puzzle.get('image_base64', ''))}")
-                
-                # Verify structure of returned puzzles
-                required_fields = ['id', 'name', 'image_base64', 'created_at']
-                missing_fields = [field for field in required_fields if field not in puzzle]
-                
-                if missing_fields:
-                    print(f"❌ Missing required fields in puzzle: {missing_fields}")
-                    return False
-                
-                return data
-            else:
-                print("   No puzzles found in database")
-                return []
+            # Show breakdown by category
+            category_counts = {}
+            for puzzle in all_puzzles:
+                cat = puzzle.get('category', 'None')
+                category_counts[cat] = category_counts.get(cat, 0) + 1
+            
+            print("  Category breakdown:")
+            for cat, count in category_counts.items():
+                print(f"    - {cat}: {count} puzzles")
+            
+            return all_puzzles
         else:
-            print(f"❌ Get all puzzles failed: {response.status_code}")
-            print(f"   Response: {response.text}")
-            return None
-            
+            print_result(False, f"Failed to fetch all puzzles: {response.status_code} - {response.text}")
+            return []
     except Exception as e:
-        print(f"❌ Get all puzzles failed: {e}")
-        return None
-
-def test_delete_puzzle(puzzle_id):
-    """Test DELETE /api/puzzles/{puzzle_id} - Delete puzzle"""
-    print(f"\n🔍 Testing delete puzzle (DELETE /api/puzzles/{puzzle_id})...")
-    
-    if not puzzle_id:
-        print("❌ No puzzle ID provided for deletion test")
-        return False
-    
-    try:
-        response = requests.delete(f"{BACKEND_URL}/puzzles/{puzzle_id}")
-        
-        print(f"   Status Code: {response.status_code}")
-        
-        if response.status_code == 200:
-            data = response.json()
-            print("✅ Puzzle deletion successful")
-            print(f"   Response: {data}")
-            return True
-        elif response.status_code == 404:
-            print("❌ Puzzle not found (404)")
-            return False
-        else:
-            print(f"❌ Puzzle deletion failed: {response.status_code}")
-            print(f"   Response: {response.text}")
-            return False
-            
-    except Exception as e:
-        print(f"❌ Puzzle deletion failed: {e}")
-        return False
-
-def verify_puzzle_deleted(puzzle_id):
-    """Verify that the puzzle no longer exists in the database"""
-    print(f"\n🔍 Verifying puzzle {puzzle_id} is deleted...")
-    
-    puzzles = test_get_all_puzzles()
-    if puzzles is None:
-        print("❌ Could not fetch puzzles to verify deletion")
-        return False
-    
-    # Check if the deleted puzzle ID still exists
-    for puzzle in puzzles:
-        if puzzle.get('id') == puzzle_id:
-            print(f"❌ Puzzle {puzzle_id} still exists after deletion")
-            return False
-    
-    print(f"✅ Puzzle {puzzle_id} successfully deleted from database")
-    return True
+        print_result(False, f"Error fetching all puzzles: {e}")
+        return []
 
 def run_full_test_suite():
     """Run the complete test suite for puzzle API"""
