@@ -65,7 +65,7 @@ export default function DifficultySelect() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={32} color="white" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Choose Level!</Text>
+        <Text style={styles.headerTitle}>Pick Your Challenge!</Text>
         <View style={styles.placeholder} />
       </View>
 
@@ -75,12 +75,6 @@ export default function DifficultySelect() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Title */}
-        <View style={styles.titleContainer}>
-          <Ionicons name="trophy" size={60} color="#FFD700" />
-          <Text style={styles.title}>Pick Your Challenge!</Text>
-        </View>
-
         {/* Difficulty Options */}
         <View style={styles.optionsContainer}>
           {difficulties.map((diff, index) => (
