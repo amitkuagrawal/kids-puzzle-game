@@ -102,13 +102,49 @@ export default function PuzzleGame() {
     checkCompletion(newPieces);
   };
 
-  const checkCompletion = (pieces: PuzzlePiece[]) => {
+  const checkCompletion = async (pieces: PuzzlePiece[]) => {
     const isComplete = pieces.every(piece => piece.correctPosition === piece.currentPosition);
     
     if (isComplete) {
       setIsComplete(true);
       if (timerRef.current) clearInterval(timerRef.current);
+      
+      // Save score and fetch top scores
+      const finalScore = calculateScore();
+      await saveScore(finalScore);
+      await fetchTopScores();
+      
       playCelebration();
+    }
+  };
+
+  const saveScore = async (score: number) => {
+    try {
+      await fetch(`${BACKEND_URL}/api/scores`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          puzzle_id: puzzleId,
+          difficulty: difficulty,
+          time_seconds: timer,
+          moves: moves,
+          score: score,
+        }),
+      });
+    } catch (error) {
+      console.error('Error saving score:', error);
+    }
+  };
+
+  const fetchTopScores = async () => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/scores/${puzzleId}/${difficulty}`);
+      const data = await response.json();
+      setTopScores(data);
+    } catch (error) {
+      console.error('Error fetching scores:', error);
     }
   };
 
