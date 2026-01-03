@@ -103,19 +103,11 @@ export default function PuzzleGame() {
   };
 
   const playCelebration = () => {
-    Animated.sequence([
-      Animated.timing(confettiAnim, {
-        toValue: 1,
-        duration: 500,
-        useNativeDriver: true,
-      }),
-      Animated.timing(confettiAnim, {
-        toValue: 0,
-        duration: 500,
-        delay: 2000,
-        useNativeDriver: true,
-      }),
-    ]).start();
+    Animated.timing(confettiAnim, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
   };
 
   const formatTime = (seconds: number) => {
