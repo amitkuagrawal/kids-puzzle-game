@@ -320,6 +320,14 @@ export default function PuzzleGame() {
               </TouchableOpacity>
               
               <TouchableOpacity
+                style={[styles.button, styles.newPuzzleButton]}
+                onPress={() => router.push('/child/puzzle-gallery')}
+              >
+                <Ionicons name="grid" size={30} color="white" />
+                <Text style={styles.buttonText}>New Puzzle</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
                 style={[styles.button, styles.homeButton]}
                 onPress={() => router.push('/')}
               >
