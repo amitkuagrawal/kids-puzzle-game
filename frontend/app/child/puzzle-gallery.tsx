@@ -294,6 +294,9 @@ const styles = StyleSheet.create({
     gap: 12,
     minHeight: 80,
   },
+  uploadTextContainer: {
+    flex: 1,
+  },
   uploadTitle: {
     fontSize: 18,
     fontWeight: 'bold',
