@@ -15,12 +15,21 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width, height } = Dimensions.get('window');
 const PUZZLE_SIZE = width - 40;
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
 interface PuzzlePiece {
   id: number;
   correctPosition: number;
   currentPosition: number;
   imageUri: string;
+}
+
+interface ScoreEntry {
+  id: string;
+  score: number;
+  time_seconds: number;
+  moves: number;
+  created_at: string;
 }
 
 export default function PuzzleGame() {
