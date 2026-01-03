@@ -256,29 +256,35 @@ frontend:
         agent: "testing"
         comment: "CRITICAL RE-TEST COMPLETED: ✅ Navigation FIXED - both buttons successfully navigate to correct screens (/child/puzzle-gallery and /admin/manage). ✅ Pointer events issue RESOLVED - decorative stars no longer block interactions. ✅ No console errors found. ❌ CRITICAL ISSUE: Button touch targets too small for mobile - Play button: 185x37px (37px height), Admin button: 121x23px (23px height). Both need minimum 44px height for accessibility. CSS shows minHeight: 120px/100px but not being applied correctly."
 
-  - task: "Admin panel - upload and manage puzzles"
+  - task: "Admin panel - web dashboard"
     implemented: true
-    working: "NA"
-    file: "/app/frontend/app/admin/manage.tsx"
+    working: true
+    file: "/app/backend/admin_dashboard.html"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Admin screen with image picker integration, puzzle upload, gallery view, and delete functionality. Uses expo-image-picker with base64 conversion. Includes loading states and error handling."
+      - working: true
+        agent: "main"
+        comment: "DEPRECATED mobile admin screen. Replaced with web-based admin dashboard at /api/admin-dashboard. Dashboard has: 1) Image Management tab for categories and bulk uploads, 2) Analytics tab. Old /app/frontend/app/admin folder removed."
 
   - task: "Puzzle gallery for children"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/app/child/puzzle-gallery.tsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Child-friendly puzzle gallery with grid layout. Shows puzzle thumbnails with play overlay icons. Handles empty state with friendly messages. Navigates to difficulty selector on puzzle selection."
+      - working: true
+        agent: "main"
+        comment: "FIXED: Gallery now displays categories in a 2-column grid with preview images. Features: 1) Server categories (Vehicles, Flags, Animals), 2) Local Pictures category for user-uploaded images, 3) Category detail view modal, 4) Upload section for adding personal pictures saved to device storage."
 
   - task: "Difficulty selector"
     implemented: true
