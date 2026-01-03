@@ -65,6 +65,10 @@ export default function PuzzleGame() {
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
+      // Track abandonment if puzzle wasn't completed
+      if (!isComplete && timer > 0) {
+        Analytics.puzzleAbandoned(puzzleId as string, difficulty as string, timer);
+      }
     };
   }, []);
 
