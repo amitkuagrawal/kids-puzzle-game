@@ -520,65 +520,105 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-  sectionContainer: {
-    paddingHorizontal: 15,
-    paddingTop: 20,
+  // Categories Grid
+  categoriesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    padding: 15,
+    justifyContent: 'space-between',
   },
-  sectionTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#FD7979',
+  categoryCard: {
+    width: CARD_SIZE,
+    height: CARD_SIZE + 50,
+    borderRadius: 20,
     marginBottom: 15,
-  },
-  categorySection: {
-    marginBottom: 15,
-    borderRadius: 15,
     overflow: 'hidden',
+    backgroundColor: 'white',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 5,
+    borderWidth: 3,
   },
-  categoryHeader: {
+  categoryPreviewImage: {
+    width: '100%',
+    height: CARD_SIZE - 10,
+  },
+  categoryPlaceholder: {
+    width: '100%',
+    height: CARD_SIZE - 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  categoryPlaceholderIcon: {
+    fontSize: 60,
+  },
+  categoryCardFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    gap: 8,
+  },
+  categoryCardIcon: {
+    fontSize: 20,
+  },
+  categoryCardTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'white',
+    flex: 1,
+  },
+  categoryCardCount: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: 'white',
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  // Modal for viewing puzzles in a category
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#FEEAC9',
+  },
+  modalHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 15,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
   },
-  categoryTitleContainer: {
+  modalHeaderTitle: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
   },
-  categoryIcon: {
-    fontSize: 24,
+  modalHeaderIcon: {
+    fontSize: 28,
   },
-  categoryTitle: {
-    fontSize: 18,
+  modalHeaderText: {
+    fontSize: 24,
     fontWeight: 'bold',
     color: 'white',
   },
-  categoryBadge: {
-    backgroundColor: 'rgba(255,255,255,0.3)',
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderRadius: 12,
+  puzzlesScrollView: {
+    flex: 1,
   },
-  categoryBadgeText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  puzzlesRow: {
-    backgroundColor: 'white',
+  puzzlesGridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     padding: 15,
+    justifyContent: 'space-between',
   },
-  puzzleCard: {
-    width: 130,
-    height: 130,
+  puzzleGridCard: {
+    width: CARD_SIZE,
+    height: CARD_SIZE,
     borderRadius: 15,
-    marginRight: 12,
+    marginBottom: 15,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -586,20 +626,11 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 3,
   },
-  puzzleImage: {
+  puzzleGridImage: {
     width: '100%',
     height: '100%',
   },
-  puzzleOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+  // Empty state
   emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -617,9 +648,16 @@ const styles = StyleSheet.create({
     marginTop: 10,
     textAlign: 'center',
   },
+  // Upload section
   uploadSection: {
     padding: 15,
-    paddingTop: 25,
+    paddingTop: 10,
+  },
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#FD7979',
+    marginBottom: 15,
   },
   uploadCard: {
     backgroundColor: '#FD7979',
@@ -670,26 +708,26 @@ const styles = StyleSheet.create({
     marginTop: 15,
     fontWeight: '600',
   },
-  // Modal Styles
-  modalOverlay: {
+  // Category Selection Modal for Upload
+  categoryModalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'flex-end',
   },
-  modalContent: {
+  categoryModalContent: {
     backgroundColor: 'white',
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
     padding: 25,
     maxHeight: '60%',
   },
-  modalTitle: {
+  categoryModalTitle: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#333',
     textAlign: 'center',
   },
-  modalSubtitle: {
+  categoryModalSubtitle: {
     fontSize: 16,
     color: '#666',
     textAlign: 'center',
@@ -721,7 +759,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#4CAF50',
   },
-  modalButtons: {
+  categoryModalButtons: {
     flexDirection: 'row',
     gap: 15,
     marginTop: 20,
