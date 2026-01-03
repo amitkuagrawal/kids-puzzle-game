@@ -15,6 +15,7 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Analytics } from '../../utils/analytics';
 
 const { width, height } = Dimensions.get('window');
 const PUZZLE_SIZE = width - 40;
