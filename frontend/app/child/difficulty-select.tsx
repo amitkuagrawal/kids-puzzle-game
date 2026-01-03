@@ -177,10 +177,4 @@ const styles = StyleSheet.create({
     marginTop: 5,
     fontWeight: '600',
   },
-  playButton: {
-    marginTop: 15,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    borderRadius: 30,
-    padding: 10,
-  },
 });
