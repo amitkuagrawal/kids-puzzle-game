@@ -375,19 +375,19 @@ export default function PuzzleGame() {
               
               <View style={styles.scoreContainer}>
                 <View style={styles.scoreItem}>
-                  <Ionicons name="time" size={30} color="#4CAF50" />
+                  <Ionicons name="time" size={24} color="#4CAF50" />
                   <Text style={styles.scoreLabel}>Time</Text>
                   <Text style={styles.scoreValue}>{formatTime(timer)}</Text>
                 </View>
                 
                 <View style={styles.scoreItem}>
-                  <Ionicons name="swap-horizontal" size={30} color="#2196F3" />
+                  <Ionicons name="swap-horizontal" size={24} color="#2196F3" />
                   <Text style={styles.scoreLabel}>Moves</Text>
                   <Text style={styles.scoreValue}>{moves}</Text>
                 </View>
                 
                 <View style={styles.scoreItem}>
-                  <Ionicons name="star" size={30} color="#FFD700" />
+                  <Ionicons name="star" size={24} color="#FFD700" />
                   <Text style={styles.scoreLabel}>Score</Text>
                   <Text style={styles.scoreValue}>{calculateScore()}</Text>
                 </View>
