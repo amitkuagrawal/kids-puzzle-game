@@ -63,6 +63,111 @@ export default function PuzzleGallery() {
     });
   };
 
+  const pickImage = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      if (status !== 'granted') {
+        Alert.alert('Permission needed', 'Please allow access to your photos to upload a picture');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+
+      if (!result.canceled && result.assets[0].uri) {
+        await processAndUploadImage(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Alert.alert('Oops!', 'Could not pick image. Please try again!');
+    }
+  };
+
+  const processAndUploadImage = async (imageUri: string) => {
+    try {
+      setProcessing(true);
+      
+      // Compress and resize image
+      const MAX_DIMENSION = 800;
+      
+      const manipulatedImage = await ImageManipulator.manipulateAsync(
+        imageUri,
+        [{ resize: { width: MAX_DIMENSION } }],
+        {
+          compress: 0.7,
+          format: ImageManipulator.SaveFormat.JPEG,
+          base64: true,
+        }
+      );
+
+      setProcessing(false);
+      
+      if (manipulatedImage.base64) {
+        await uploadImage(manipulatedImage.base64);
+      } else {
+        Alert.alert('Oops!', 'Could not process image');
+      }
+    } catch (error) {
+      console.error('Error processing image:', error);
+      setProcessing(false);
+      Alert.alert('Oops!', 'Could not process image');
+    }
+  };
+
+  const uploadImage = async (base64: string) => {
+    try {
+      setUploading(true);
+      const puzzleName = `My Puzzle ${Date.now()}`;
+      
+      const response = await fetch(`${BACKEND_URL}/api/puzzles`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: puzzleName,
+          image_base64: `data:image/jpeg;base64,${base64}`,
+        }),
+      });
+
+      if (response.ok) {
+        const newPuzzle = await response.json();
+        
+        // Track upload
+        Analytics.puzzleUploaded(base64.length);
+        
+        Alert.alert('Success!', 'Your picture is ready! Now choose a difficulty level.', [
+          {
+            text: 'OK',
+            onPress: () => {
+              // Navigate directly to difficulty selector
+              router.push({
+                pathname: '/child/difficulty-select',
+                params: {
+                  puzzleId: newPuzzle.id,
+                  puzzleName: newPuzzle.name,
+                  imageBase64: newPuzzle.image_base64,
+                },
+              });
+            },
+          },
+        ]);
+      } else {
+        Alert.alert('Oops!', 'Could not upload your picture');
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      Alert.alert('Oops!', 'Could not upload your picture');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
