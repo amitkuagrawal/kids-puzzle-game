@@ -23,7 +23,7 @@ export default function DifficultySelect() {
     {
       level: 'baby_easy',
       pieces: 4,
-      color: '#FEEAC9',
+      color: '#FDACAC',
       icon: 'heart',
       label: 'Baby Easy',
       description: '2 × 2 pieces',
