@@ -57,28 +57,20 @@ export default function PuzzleGallery() {
   const loadAllPuzzles = async () => {
     try {
       setLoading(true);
-      console.log('Loading puzzles from:', `${BACKEND_URL}/api/puzzles/preloaded`);
       
       // Fetch preloaded puzzles from server (organized by category)
       const response = await fetch(`${BACKEND_URL}/api/puzzles/preloaded`);
       const serverCategories = await response.json();
-      console.log('Server categories received:', serverCategories.length, 'categories');
       
       // Filter out "Uncategorized" category
       const filteredCategories = serverCategories.filter(
         (cat: CategoryData) => cat.category !== 'Uncategorized'
       );
-      console.log('Filtered categories:', filteredCategories.length);
-      filteredCategories.forEach((cat: CategoryData) => {
-        console.log(`Category: ${cat.category}, puzzles: ${cat.puzzles.length}`);
-      });
-      
       setCategories(filteredCategories);
       
       // Load local puzzles
       const local = await getLocalPuzzles();
       setLocalPuzzles(local);
-      console.log('Local puzzles loaded:', local.length);
     } catch (error) {
       console.error('Error fetching puzzles:', error);
       // Still try to load local puzzles even if server fails
