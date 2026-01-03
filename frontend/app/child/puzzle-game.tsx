@@ -369,7 +369,7 @@ export default function PuzzleGame() {
                 </View>
               </View>
               
-              <Ionicons name="trophy" size={60} color="#FFD700" />
+              <Ionicons name="trophy" size={40} color="#FFD700" />
               <Text style={styles.congratsText}>Amazing!</Text>
               <Text style={styles.completionMessage}>You completed the puzzle!</Text>
               
