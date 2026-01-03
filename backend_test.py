@@ -34,19 +34,108 @@ def print_result(success, message):
 
 def test_api_health():
     """Test if the API is running"""
-    print("🔍 Testing API health...")
+    print_test_header("API Health Check")
     try:
         response = requests.get(f"{BACKEND_URL}/")
         if response.status_code == 200:
-            print("✅ API is running")
-            print(f"   Response: {response.json()}")
+            print_result(True, f"API is running: {response.json()}")
             return True
         else:
-            print(f"❌ API health check failed: {response.status_code}")
+            print_result(False, f"API health check failed: {response.status_code}")
             return False
     except Exception as e:
-        print(f"❌ API health check failed: {e}")
+        print_result(False, f"API health check failed: {e}")
         return False
+
+def test_create_categories():
+    """Test creating categories with different icons and colors"""
+    print_test_header("Create Categories")
+    
+    # Test 1: Create Flags category
+    flags_data = {
+        "name": "Flags",
+        "icon": "🏳️",
+        "color": "#FF9800"
+    }
+    
+    try:
+        response = requests.post(f"{BACKEND_URL}/categories", json=flags_data)
+        if response.status_code == 200:
+            flags_category = response.json()
+            print_result(True, f"Created Flags category: {flags_category['name']} with icon {flags_category['icon']}")
+            flags_id = flags_category['id']
+        else:
+            print_result(False, f"Failed to create Flags category: {response.status_code} - {response.text}")
+            return None, None
+    except Exception as e:
+        print_result(False, f"Error creating Flags category: {e}")
+        return None, None
+    
+    # Test 2: Create Vehicles category
+    vehicles_data = {
+        "name": "Vehicles",
+        "icon": "🚗",
+        "color": "#2196F3"
+    }
+    
+    try:
+        response = requests.post(f"{BACKEND_URL}/categories", json=vehicles_data)
+        if response.status_code == 200:
+            vehicles_category = response.json()
+            print_result(True, f"Created Vehicles category: {vehicles_category['name']} with icon {vehicles_category['icon']}")
+            vehicles_id = vehicles_category['id']
+        else:
+            print_result(False, f"Failed to create Vehicles category: {response.status_code} - {response.text}")
+            return flags_id, None
+    except Exception as e:
+        print_result(False, f"Error creating Vehicles category: {e}")
+        return flags_id, None
+    
+    # Test 3: Try to create duplicate category (should fail)
+    try:
+        response = requests.post(f"{BACKEND_URL}/categories", json=flags_data)
+        if response.status_code == 400:
+            print_result(True, "Correctly rejected duplicate category creation")
+        else:
+            print_result(False, f"Should have rejected duplicate category: {response.status_code}")
+    except Exception as e:
+        print_result(False, f"Error testing duplicate category: {e}")
+    
+    return flags_id, vehicles_id
+
+def test_get_categories():
+    """Test fetching all categories"""
+    print_test_header("Get All Categories")
+    
+    try:
+        response = requests.get(f"{BACKEND_URL}/categories")
+        if response.status_code == 200:
+            categories = response.json()
+            print_result(True, f"Fetched {len(categories)} categories")
+            
+            # Verify both categories exist with image_count = 0
+            flags_found = False
+            vehicles_found = False
+            
+            for cat in categories:
+                print(f"  - {cat['name']}: {cat['icon']} (color: {cat['color']}, images: {cat['image_count']})")
+                if cat['name'] == 'Flags' and cat['image_count'] == 0:
+                    flags_found = True
+                elif cat['name'] == 'Vehicles' and cat['image_count'] == 0:
+                    vehicles_found = True
+            
+            if flags_found and vehicles_found:
+                print_result(True, "Both categories found with image_count = 0")
+            else:
+                print_result(False, f"Categories verification failed. Flags: {flags_found}, Vehicles: {vehicles_found}")
+            
+            return categories
+        else:
+            print_result(False, f"Failed to fetch categories: {response.status_code} - {response.text}")
+            return []
+    except Exception as e:
+        print_result(False, f"Error fetching categories: {e}")
+        return []
 
 def test_upload_puzzle():
     """Test POST /api/puzzles - Upload a puzzle with base64 image"""
