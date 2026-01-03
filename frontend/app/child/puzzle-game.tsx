@@ -647,6 +647,9 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     gap: 10,
   },
+  scoreboardButton: {
+    backgroundColor: '#FFD700',
+  },
   playAgainButton: {
     backgroundColor: '#4CAF50',
   },
