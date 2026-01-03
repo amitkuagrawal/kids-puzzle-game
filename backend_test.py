@@ -316,59 +316,43 @@ def test_get_all_puzzles():
         print_result(False, f"Error fetching all puzzles: {e}")
         return []
 
-def run_full_test_suite():
-    """Run the complete test suite for puzzle API"""
-    print("🚀 Starting Puzzle API Test Suite")
-    print("=" * 50)
+def main():
+    """Run all admin dashboard backend tests"""
+    print("🧩 ADMIN DASHBOARD BACKEND API TESTING SUITE")
+    print(f"Testing backend at: {BACKEND_URL}")
+    print(f"Test started at: {datetime.now()}")
     
-    # Test 1: API Health Check
+    # Test sequence as specified in review request
     if not test_api_health():
         print("\n❌ API health check failed. Stopping tests.")
         return False
     
-    # Test 2: Upload Puzzle
-    puzzle_id = test_upload_puzzle()
-    if not puzzle_id:
-        print("\n❌ Puzzle upload failed. Stopping tests.")
-        return False
+    flags_id, vehicles_id = test_create_categories()
+    test_get_categories()
     
-    # Test 3: Get All Puzzles (should include uploaded puzzle)
-    puzzles = test_get_all_puzzles()
-    if puzzles is None:
-        print("\n❌ Get all puzzles failed. Continuing with deletion test.")
-    else:
-        # Verify our uploaded puzzle is in the list
-        found_puzzle = False
-        for puzzle in puzzles:
-            if puzzle.get('id') == puzzle_id:
-                found_puzzle = True
-                break
-        
-        if found_puzzle:
-            print(f"✅ Uploaded puzzle {puzzle_id} found in puzzle list")
-        else:
-            print(f"❌ Uploaded puzzle {puzzle_id} not found in puzzle list")
+    flag_puzzle_id = test_upload_single_puzzle()
+    vehicle_puzzle_ids = test_bulk_upload()
     
-    # Test 4: Delete Puzzle
-    if not test_delete_puzzle(puzzle_id):
-        print(f"\n❌ Puzzle deletion failed for ID: {puzzle_id}")
-        return False
+    test_get_preloaded_puzzles()
+    test_get_category_puzzles()
     
-    # Test 5: Verify Deletion
-    if not verify_puzzle_deleted(puzzle_id):
-        print(f"\n❌ Puzzle deletion verification failed for ID: {puzzle_id}")
-        return False
+    if flags_id:
+        test_delete_category(flags_id)
+        test_verify_uncategorized()
     
-    print("\n" + "=" * 50)
-    print("🎉 All Puzzle API tests completed successfully!")
+    test_get_all_puzzles()
+    
+    print(f"\n{'='*60}")
+    print("🎯 ADMIN DASHBOARD TESTING COMPLETE")
+    print(f"{'='*60}")
     return True
 
 if __name__ == "__main__":
     print(f"Testing backend at: {BACKEND_URL}")
-    success = run_full_test_suite()
+    success = main()
     
     if success:
-        print("\n✅ ALL TESTS PASSED")
+        print("\n✅ ALL TESTS COMPLETED")
         sys.exit(0)
     else:
         print("\n❌ SOME TESTS FAILED")
