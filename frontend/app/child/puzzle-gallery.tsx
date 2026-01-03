@@ -184,10 +184,12 @@ export default function PuzzleGallery() {
       setProcessing(true);
       setShowCategoryModal(false);
       
+      // Use custom category name if provided, otherwise use selected
+      const finalCategory = customCategoryName.trim() || selectedCategory;
       const puzzleName = `My Puzzle ${new Date().toLocaleDateString()}`;
       
       // Save locally
-      await saveImageLocally(pendingBase64, puzzleName, selectedCategory);
+      await saveImageLocally(pendingBase64, puzzleName, finalCategory);
       
       // Track upload
       Analytics.puzzleUploaded(pendingBase64.length);
@@ -201,6 +203,7 @@ export default function PuzzleGallery() {
       // Reset state
       setPendingBase64(null);
       setSelectedCategory('My Pictures');
+      setCustomCategoryName('');
     } catch (error) {
       console.error('Error saving image:', error);
       Alert.alert('Oops!', 'Could not save your picture');
