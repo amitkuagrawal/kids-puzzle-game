@@ -42,8 +42,8 @@ export default function PuzzleGame() {
   const { puzzleId, puzzleName, imageBase64, difficulty, pieces } = params;
   
   const numPieces = parseInt(pieces as string);
-  const cols = difficulty === 'easy' ? 3 : difficulty === 'medium' ? 3 : 4;
-  const rows = Math.ceil(numPieces / cols);
+  const cols = difficulty === 'baby_easy' ? 2 : difficulty === 'easy' ? 3 : difficulty === 'medium' ? 3 : 4;
+  const rows = difficulty === 'baby_easy' ? 2 : difficulty === 'easy' ? 3 : difficulty === 'medium' ? 4 : 4;
   
   const [puzzlePieces, setPuzzlePieces] = useState<PuzzlePiece[]>([]);
   const [selectedPiece, setSelectedPiece] = useState<number | null>(null);
