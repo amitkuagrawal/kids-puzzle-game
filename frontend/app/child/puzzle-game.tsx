@@ -356,26 +356,6 @@ export default function PuzzleGame() {
                 <Text style={styles.scoreValue}>{calculateScore()}</Text>
               </View>
             </View>
-
-            {/* Conditionally show Top 10 Scoreboard */}
-            {showScoreboard && topScores.length > 0 && (
-              <View style={styles.scoreboardContainer}>
-                <Text style={styles.scoreboardTitle}>🏆 Top 10 Scores</Text>
-                <ScrollView style={styles.scoreboardList} nestedScrollEnabled={true}>
-                  {topScores.map((entry, index) => (
-                    <View key={entry.id} style={styles.scoreboardEntry}>
-                      <Text style={styles.scoreboardRank}>#{index + 1}</Text>
-                      <View style={styles.scoreboardDetails}>
-                        <Text style={styles.scoreboardScore}>{entry.score} pts</Text>
-                        <Text style={styles.scoreboardInfo}>
-                          {formatTime(entry.time_seconds)} • {entry.moves} moves
-                        </Text>
-                      </View>
-                    </View>
-                  ))}
-                </ScrollView>
-              </View>
-            )}
             
             <View style={styles.completionButtons}>
               <TouchableOpacity
@@ -383,9 +363,7 @@ export default function PuzzleGame() {
                 onPress={handleViewScoreboard}
               >
                 <Ionicons name="trophy" size={30} color="white" />
-                <Text style={styles.buttonText}>
-                  {showScoreboard ? 'Hide Scores' : 'View Scores'}
-                </Text>
+                <Text style={styles.buttonText}>View Scores</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.button, styles.playAgainButton]}
