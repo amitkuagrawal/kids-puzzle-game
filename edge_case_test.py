@@ -9,7 +9,7 @@ import json
 import sys
 
 # Backend URL from environment
-BACKEND_URL = "https://jigsawfun-2.preview.emergentagent.com/api"
+BACKEND_URL = "https://braingames-14.preview.emergentagent.com/api"
 
 def test_delete_nonexistent_puzzle():
     """Test deleting a puzzle that doesn't exist"""

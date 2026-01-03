@@ -22,7 +22,8 @@ import { saveImageLocally, getLocalPuzzles, LocalPuzzle, getImageAsBase64 } from
 
 const { width } = Dimensions.get('window');
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
-const CARD_SIZE = (width - 50) / 2; // 2 columns with padding
+const CARD_SIZE = (width - 48) / 2; // 2 columns with padding (15px on each side + 8px gap)
+const CARD_HEIGHT = CARD_SIZE * 1.2; // Make cards slightly taller than wide
 
 interface Puzzle {
   id: string;

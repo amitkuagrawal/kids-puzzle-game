@@ -11,7 +11,7 @@ from datetime import datetime
 import sys
 
 # Get backend URL from environment
-BACKEND_URL = "https://jigsawfun-2.preview.emergentagent.com/api"
+BACKEND_URL = "https://braingames-14.preview.emergentagent.com/api"
 
 # Small test images in base64 format (1x1 pixel images)
 TEST_IMAGE_FLAG = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAI9jU77zgAAAABJRU5ErkJggg=="
