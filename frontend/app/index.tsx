@@ -8,12 +8,172 @@ const { width } = Dimensions.get('window');
 
 export default function Index() {
   const router = useRouter();
+  
+  // Animation refs for puzzle pieces
+  const piece1Anim = useRef(new Animated.Value(0)).current;
+  const piece2Anim = useRef(new Animated.Value(0)).current;
+  const piece3Anim = useRef(new Animated.Value(0)).current;
+  const piece4Anim = useRef(new Animated.Value(0)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     // Track app opened
     Analytics.appOpened();
     Analytics.sessionStart();
+    
+    // Start puzzle assembly animation
+    startPuzzleAnimation();
   }, []);
+
+  const startPuzzleAnimation = () => {
+    // Animate puzzle pieces coming together
+    Animated.loop(
+      Animated.sequence([
+        // Pieces fly in from corners
+        Animated.parallel([
+          Animated.timing(piece1Anim, {
+            toValue: 1,
+            duration: 800,
+            useNativeDriver: true,
+          }),
+          Animated.timing(piece2Anim, {
+            toValue: 1,
+            duration: 800,
+            delay: 100,
+            useNativeDriver: true,
+          }),
+          Animated.timing(piece3Anim, {
+            toValue: 1,
+            duration: 800,
+            delay: 200,
+            useNativeDriver: true,
+          }),
+          Animated.timing(piece4Anim, {
+            toValue: 1,
+            duration: 800,
+            delay: 300,
+            useNativeDriver: true,
+          }),
+        ]),
+        // Pulse when complete
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.1,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+        ]),
+        // Wait before resetting
+        Animated.delay(1500),
+        // Reset pieces
+        Animated.parallel([
+          Animated.timing(piece1Anim, {
+            toValue: 0,
+            duration: 400,
+            useNativeDriver: true,
+          }),
+          Animated.timing(piece2Anim, {
+            toValue: 0,
+            duration: 400,
+            useNativeDriver: true,
+          }),
+          Animated.timing(piece3Anim, {
+            toValue: 0,
+            duration: 400,
+            useNativeDriver: true,
+          }),
+          Animated.timing(piece4Anim, {
+            toValue: 0,
+            duration: 400,
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.delay(500),
+      ])
+    ).start();
+  };
+
+  // Calculate puzzle piece positions
+  const piece1Style = {
+    transform: [
+      {
+        translateX: piece1Anim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [-60, 0],
+        }),
+      },
+      {
+        translateY: piece1Anim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [-60, 0],
+        }),
+      },
+      { scale: pulseAnim },
+    ],
+    opacity: piece1Anim,
+  };
+
+  const piece2Style = {
+    transform: [
+      {
+        translateX: piece2Anim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [60, 0],
+        }),
+      },
+      {
+        translateY: piece2Anim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [-60, 0],
+        }),
+      },
+      { scale: pulseAnim },
+    ],
+    opacity: piece2Anim,
+  };
+
+  const piece3Style = {
+    transform: [
+      {
+        translateX: piece3Anim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [-60, 0],
+        }),
+      },
+      {
+        translateY: piece3Anim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [60, 0],
+        }),
+      },
+      { scale: pulseAnim },
+    ],
+    opacity: piece3Anim,
+  };
+
+  const piece4Style = {
+    transform: [
+      {
+        translateX: piece4Anim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [60, 0],
+        }),
+      },
+      {
+        translateY: piece4Anim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [60, 0],
+        }),
+      },
+      { scale: pulseAnim },
+    ],
+    opacity: piece4Anim,
+  };
 
   return (
     <View style={styles.container}>
