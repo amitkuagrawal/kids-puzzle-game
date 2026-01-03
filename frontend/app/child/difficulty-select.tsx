@@ -47,6 +47,9 @@ export default function DifficultySelect() {
   ];
 
   const startGame = (difficulty: string, pieces: number) => {
+    // Track difficulty selection
+    Analytics.difficultySelected(difficulty, pieces);
+    
     router.push({
       pathname: '/child/puzzle-game',
       params: {
