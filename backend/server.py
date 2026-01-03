@@ -259,7 +259,7 @@ async def root():
     return {"message": "Puzzle API is running"}
 
 # Web Analytics Dashboard
-@app.get("/analytics-dashboard", response_class=HTMLResponse)
+@api_router.get("/analytics-dashboard", response_class=HTMLResponse)
 async def analytics_dashboard():
     """Serve the web analytics dashboard for app creators"""
     try:
