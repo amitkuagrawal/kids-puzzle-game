@@ -21,6 +21,14 @@ export default function DifficultySelect() {
 
   const difficulties = [
     {
+      level: 'baby_easy',
+      pieces: 4,
+      color: '#FEEAC9',
+      icon: 'heart',
+      label: 'Baby Easy',
+      description: '2 × 2 pieces',
+    },
+    {
       level: 'easy',
       pieces: 9,
       color: '#4CAF50',
