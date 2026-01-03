@@ -95,9 +95,6 @@ export default function PuzzleGallery() {
                 style={styles.puzzleImage}
                 resizeMode="cover"
               />
-              <View style={styles.puzzleOverlay} pointerEvents="none">
-                <Ionicons name="play-circle" size={60} color="white" />
-              </View>
             </TouchableOpacity>
           ))}
         </ScrollView>
