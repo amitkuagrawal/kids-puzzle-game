@@ -398,7 +398,7 @@ export default function PuzzleGame() {
                   style={[styles.button, styles.scoreboardButton]}
                   onPress={handleViewScoreboard}
                 >
-                  <Ionicons name="trophy" size={30} color="white" />
+                  <Ionicons name="trophy" size={22} color="white" />
                   <Text style={styles.buttonText}>View Scores</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -412,7 +412,7 @@ export default function PuzzleGame() {
                     confettiAnim.setValue(0);
                   }}
                 >
-                  <Ionicons name="refresh" size={30} color="white" />
+                  <Ionicons name="refresh" size={22} color="white" />
                   <Text style={styles.buttonText}>Play Again</Text>
                 </TouchableOpacity>
                 
@@ -420,7 +420,7 @@ export default function PuzzleGame() {
                   style={[styles.button, styles.newPuzzleButton]}
                   onPress={() => router.push('/child/puzzle-gallery')}
                 >
-                  <Ionicons name="grid" size={30} color="white" />
+                  <Ionicons name="grid" size={22} color="white" />
                   <Text style={styles.buttonText}>New Puzzle</Text>
                 </TouchableOpacity>
                 
@@ -428,7 +428,7 @@ export default function PuzzleGame() {
                   style={[styles.button, styles.homeButton]}
                   onPress={() => router.push('/')}
                 >
-                  <Ionicons name="home" size={30} color="white" />
+                  <Ionicons name="home" size={22} color="white" />
                   <Text style={styles.buttonText}>Home</Text>
                 </TouchableOpacity>
               </View>
