@@ -443,6 +443,22 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0, 0, 0, 0.1)',
     borderRadius: 5,
   },
+  selectedPiece: {
+    backgroundColor: '#FFD700',
+    transform: [{ scale: 1.05 }],
+  },
+  selectedBorder: {
+    borderWidth: 4,
+    borderColor: '#FFD700',
+  },
+  selectionIndicator: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    borderRadius: 20,
+    padding: 5,
+  },
   completionOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
