@@ -7,7 +7,7 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Dict
 from datetime import datetime, timedelta
 from bson import ObjectId
 
@@ -37,6 +37,7 @@ class PuzzleImage(BaseModel):
 class PuzzleImageCreate(BaseModel):
     name: str
     image_base64: str
+    category: Optional[str] = None
 
 class PuzzleImageResponse(BaseModel):
     id: str
@@ -45,6 +46,28 @@ class PuzzleImageResponse(BaseModel):
     created_at: datetime
     category: Optional[str] = None
     is_preloaded: bool = False
+
+# Category Models
+class CategoryCreate(BaseModel):
+    name: str
+    icon: Optional[str] = "📁"
+    color: Optional[str] = "#667eea"
+
+class CategoryResponse(BaseModel):
+    id: str
+    name: str
+    icon: str
+    color: str
+    image_count: int = 0
+    created_at: datetime
+
+class BulkUploadItem(BaseModel):
+    name: str
+    image_base64: str
+
+class BulkUploadRequest(BaseModel):
+    category: str
+    images: List[BulkUploadItem]
 
 class Score(BaseModel):
     id: Optional[str] = None
