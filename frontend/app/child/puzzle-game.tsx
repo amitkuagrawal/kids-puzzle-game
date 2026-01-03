@@ -122,10 +122,8 @@ export default function PuzzleGame() {
   };
 
   const handleViewScoreboard = async () => {
-    if (!showScoreboard) {
-      await fetchTopScores();
-    }
-    setShowScoreboard(!showScoreboard);
+    await fetchTopScores();
+    setShowScoreboard(true);
   };
 
   const saveScore = async (score: number) => {
