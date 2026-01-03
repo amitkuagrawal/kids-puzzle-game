@@ -9,6 +9,12 @@ const { width } = Dimensions.get('window');
 export default function Index() {
   const router = useRouter();
 
+  useEffect(() => {
+    // Track app opened
+    Analytics.appOpened();
+    Analytics.sessionStart();
+  }, []);
+
   return (
     <View style={styles.container}>
       {/* Decorative elements - moved to background with pointerEvents in styles */}
