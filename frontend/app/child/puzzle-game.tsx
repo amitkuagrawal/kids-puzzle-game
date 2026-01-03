@@ -348,6 +348,26 @@ export default function PuzzleGame() {
                 <Text style={styles.scoreValue}>{calculateScore()}</Text>
               </View>
             </View>
+
+            {/* Top 10 Scoreboard */}
+            {topScores.length > 0 && (
+              <View style={styles.scoreboardContainer}>
+                <Text style={styles.scoreboardTitle}>🏆 Top 10 Scores</Text>
+                <ScrollView style={styles.scoreboardList} nestedScrollEnabled={true}>
+                  {topScores.map((entry, index) => (
+                    <View key={entry.id} style={styles.scoreboardEntry}>
+                      <Text style={styles.scoreboardRank}>#{index + 1}</Text>
+                      <View style={styles.scoreboardDetails}>
+                        <Text style={styles.scoreboardScore}>{entry.score} pts</Text>
+                        <Text style={styles.scoreboardInfo}>
+                          {formatTime(entry.time_seconds)} • {entry.moves} moves
+                        </Text>
+                      </View>
+                    </View>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
             
             <View style={styles.completionButtons}>
               <TouchableOpacity
