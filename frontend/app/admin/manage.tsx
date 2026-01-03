@@ -186,11 +186,19 @@ export default function AdminManage() {
       <TouchableOpacity
         style={styles.uploadButton}
         onPress={pickImage}
-        disabled={uploading}
+        disabled={uploading || processing}
         activeOpacity={0.8}
       >
-        {uploading ? (
-          <ActivityIndicator color="white" size="small" />
+        {processing ? (
+          <>
+            <ActivityIndicator color="white" size="small" />
+            <Text style={styles.uploadButtonText}>Processing image...</Text>
+          </>
+        ) : uploading ? (
+          <>
+            <ActivityIndicator color="white" size="small" />
+            <Text style={styles.uploadButtonText}>Uploading...</Text>
+          </>
         ) : (
           <>
             <Ionicons name="cloud-upload" size={30} color="white" />
