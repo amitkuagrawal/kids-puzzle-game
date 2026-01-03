@@ -189,42 +189,7 @@ export default function PuzzleGallery() {
     }
   };
 
-  const saveImageWithCategory = async () => {
-    if (!pendingBase64) return;
-    
-    try {
-      setProcessing(true);
-      setShowCategoryModal(false);
-      
-      // Use custom category name if provided, otherwise use selected
-      const finalCategory = customCategoryName.trim() || selectedCategory;
-      const puzzleName = `My Puzzle ${new Date().toLocaleDateString()}`;
-      
-      // Save locally
-      await saveImageLocally(pendingBase64, puzzleName, finalCategory);
-      
-      // Track upload
-      Analytics.puzzleUploaded(pendingBase64.length);
-      
-      Alert.alert('Success!', 'Your picture has been saved! Tap on it to play.');
-      
-      // Reload local puzzles
-      const local = await getLocalPuzzles();
-      setLocalPuzzles(local);
-      
-      // Reset state
-      setPendingBase64(null);
-      setSelectedCategory('My Pictures');
-      setCustomCategoryName('');
-    } catch (error) {
-      console.error('Error saving image:', error);
-      Alert.alert('Oops!', 'Could not save your picture');
-    } finally {
-      setProcessing(false);
-    }
-  };
-
-  // Group local puzzles by category
+  // Group local puzzles by category (all go to "My Pictures")
   const localCategories = localPuzzles.reduce((acc, puzzle) => {
     const cat = puzzle.category || 'My Pictures';
     if (!acc[cat]) {
