@@ -352,71 +352,88 @@ export default function PuzzleGame() {
             },
           ]}
         >
-          <View style={styles.completionCard}>
-            <Ionicons name="trophy" size={100} color="#FFD700" />
-            <Text style={styles.congratsText}>Amazing!</Text>
-            <Text style={styles.completionMessage}>You did it!</Text>
-            
-            <View style={styles.scoreContainer}>
-              <View style={styles.scoreItem}>
-                <Ionicons name="time" size={30} color="#4CAF50" />
-                <Text style={styles.scoreLabel}>Time</Text>
-                <Text style={styles.scoreValue}>{formatTime(timer)}</Text>
+          <ScrollView 
+            contentContainerStyle={styles.completionScrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.completionCard}>
+              {/* Show the complete assembled image */}
+              <View style={styles.completedImageContainer}>
+                <Image
+                  source={{ uri: imageBase64 as string }}
+                  style={styles.completedImage}
+                  resizeMode="contain"
+                />
+                <View style={styles.completedImageBadge}>
+                  <Ionicons name="checkmark-circle" size={40} color="#4CAF50" />
+                </View>
               </View>
               
-              <View style={styles.scoreItem}>
-                <Ionicons name="swap-horizontal" size={30} color="#2196F3" />
-                <Text style={styles.scoreLabel}>Moves</Text>
-                <Text style={styles.scoreValue}>{moves}</Text>
+              <Ionicons name="trophy" size={60} color="#FFD700" />
+              <Text style={styles.congratsText}>Amazing!</Text>
+              <Text style={styles.completionMessage}>You completed the puzzle!</Text>
+              
+              <View style={styles.scoreContainer}>
+                <View style={styles.scoreItem}>
+                  <Ionicons name="time" size={30} color="#4CAF50" />
+                  <Text style={styles.scoreLabel}>Time</Text>
+                  <Text style={styles.scoreValue}>{formatTime(timer)}</Text>
+                </View>
+                
+                <View style={styles.scoreItem}>
+                  <Ionicons name="swap-horizontal" size={30} color="#2196F3" />
+                  <Text style={styles.scoreLabel}>Moves</Text>
+                  <Text style={styles.scoreValue}>{moves}</Text>
+                </View>
+                
+                <View style={styles.scoreItem}>
+                  <Ionicons name="star" size={30} color="#FFD700" />
+                  <Text style={styles.scoreLabel}>Score</Text>
+                  <Text style={styles.scoreValue}>{calculateScore()}</Text>
+                </View>
               </View>
               
-              <View style={styles.scoreItem}>
-                <Ionicons name="star" size={30} color="#FFD700" />
-                <Text style={styles.scoreLabel}>Score</Text>
-                <Text style={styles.scoreValue}>{calculateScore()}</Text>
+              <View style={styles.completionButtons}>
+                <TouchableOpacity
+                  style={[styles.button, styles.scoreboardButton]}
+                  onPress={handleViewScoreboard}
+                >
+                  <Ionicons name="trophy" size={30} color="white" />
+                  <Text style={styles.buttonText}>View Scores</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.button, styles.playAgainButton]}
+                  onPress={() => {
+                    setIsComplete(false);
+                    setTimer(0);
+                    setMoves(0);
+                    initializePuzzle();
+                    startTimer();
+                    confettiAnim.setValue(0);
+                  }}
+                >
+                  <Ionicons name="refresh" size={30} color="white" />
+                  <Text style={styles.buttonText}>Play Again</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={[styles.button, styles.newPuzzleButton]}
+                  onPress={() => router.push('/child/puzzle-gallery')}
+                >
+                  <Ionicons name="grid" size={30} color="white" />
+                  <Text style={styles.buttonText}>New Puzzle</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={[styles.button, styles.homeButton]}
+                  onPress={() => router.push('/')}
+                >
+                  <Ionicons name="home" size={30} color="white" />
+                  <Text style={styles.buttonText}>Home</Text>
+                </TouchableOpacity>
               </View>
             </View>
-            
-            <View style={styles.completionButtons}>
-              <TouchableOpacity
-                style={[styles.button, styles.scoreboardButton]}
-                onPress={handleViewScoreboard}
-              >
-                <Ionicons name="trophy" size={30} color="white" />
-                <Text style={styles.buttonText}>View Scores</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.button, styles.playAgainButton]}
-                onPress={() => {
-                  setIsComplete(false);
-                  setTimer(0);
-                  setMoves(0);
-                  initializePuzzle();
-                  startTimer();
-                  confettiAnim.setValue(0);
-                }}
-              >
-                <Ionicons name="refresh" size={30} color="white" />
-                <Text style={styles.buttonText}>Play Again</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                style={[styles.button, styles.newPuzzleButton]}
-                onPress={() => router.push('/child/puzzle-gallery')}
-              >
-                <Ionicons name="grid" size={30} color="white" />
-                <Text style={styles.buttonText}>New Puzzle</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                style={[styles.button, styles.homeButton]}
-                onPress={() => router.push('/')}
-              >
-                <Ionicons name="home" size={30} color="white" />
-                <Text style={styles.buttonText}>Home</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          </ScrollView>
         </Animated.View>
       )}
 
