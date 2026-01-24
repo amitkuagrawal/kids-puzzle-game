@@ -4,6 +4,7 @@ import { Platform } from 'react-native';
 
 const PUZZLES_DIR = FileSystem.documentDirectory ? FileSystem.documentDirectory + 'puzzles/' : null;
 const USER_PUZZLES_KEY = '@user_puzzles';
+const LEVEL_PROGRESS_KEY = '@level_progress';
 
 export interface LocalPuzzle {
   id: string;
@@ -158,4 +159,75 @@ export const getCategories = async (): Promise<string[]> => {
   const puzzles = await getLocalPuzzles();
   const categories = new Set(puzzles.map(p => p.category));
   return Array.from(categories);
+};
+
+// Level Progress Tracking
+export interface LevelProgress {
+  currentLevel: number; // Currently unlocked level (1-5)
+  levelCompletions: { [key: number]: number }; // Number of puzzles completed per level (0-5)
+}
+
+// Get level progress
+export const getLevelProgress = async (): Promise<LevelProgress> => {
+  try {
+    const progressJson = await AsyncStorage.getItem(LEVEL_PROGRESS_KEY);
+    if (progressJson) {
+      return JSON.parse(progressJson);
+    }
+    // Default: Start at level 1 with no completions
+    return {
+      currentLevel: 1,
+      levelCompletions: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+    };
+  } catch (error) {
+    console.error('Error getting level progress:', error);
+    return {
+      currentLevel: 1,
+      levelCompletions: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+    };
+  }
+};
+
+// Save level progress
+export const saveLevelProgress = async (progress: LevelProgress): Promise<void> => {
+  try {
+    await AsyncStorage.setItem(LEVEL_PROGRESS_KEY, JSON.stringify(progress));
+  } catch (error) {
+    console.error('Error saving level progress:', error);
+  }
+};
+
+// Mark a puzzle as completed in a level
+export const markPuzzleCompleted = async (level: number): Promise<boolean> => {
+  const progress = await getLevelProgress();
+
+  // Increment completion count for this level (max 5)
+  if (!progress.levelCompletions[level]) {
+    progress.levelCompletions[level] = 0;
+  }
+
+  if (progress.levelCompletions[level] < 5) {
+    progress.levelCompletions[level]++;
+  }
+
+  // If all 5 puzzles in this level are completed, unlock next level
+  let levelUnlocked = false;
+  if (progress.levelCompletions[level] === 5 && level < 5) {
+    if (progress.currentLevel === level) {
+      progress.currentLevel = level + 1;
+      levelUnlocked = true;
+    }
+  }
+
+  await saveLevelProgress(progress);
+  return levelUnlocked;
+};
+
+// Reset level progress (for testing or reset functionality)
+export const resetLevelProgress = async (): Promise<void> => {
+  const defaultProgress: LevelProgress = {
+    currentLevel: 1,
+    levelCompletions: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+  };
+  await saveLevelProgress(defaultProgress);
 };

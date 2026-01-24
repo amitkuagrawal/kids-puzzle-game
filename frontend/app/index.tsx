@@ -192,9 +192,9 @@ export default function Index() {
       </View>
 
       {/* Animated Puzzle Demo - Clickable */}
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.puzzleDemo}
-        onPress={() => router.push('/child/puzzle-gallery')}
+        onPress={() => router.push('/child/level-select')}
         activeOpacity={0.8}
       >
         <Text style={styles.demoText}>📸 Upload Your Fav Picture!</Text>
@@ -218,9 +218,9 @@ export default function Index() {
 
       {/* Buttons */}
       <View style={styles.buttonContainer}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.button, styles.childButton]}
-          onPress={() => router.push('/child/puzzle-gallery')}
+          onPress={() => router.push('/child/level-select')}
           activeOpacity={0.8}
         >
           <Ionicons name="game-controller" size={50} color="white" />
