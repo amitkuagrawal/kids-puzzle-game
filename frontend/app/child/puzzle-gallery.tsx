@@ -603,7 +603,6 @@ const styles = StyleSheet.create({
     height: CARD_SIZE,
     borderRadius: 15,
     marginBottom: 15,
-    overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
@@ -614,6 +613,7 @@ const styles = StyleSheet.create({
   puzzleGridImage: {
     width: '100%',
     height: '100%',
+    borderRadius: 15,
   },
   puzzleSolvedBadge: {
     position: 'absolute',
