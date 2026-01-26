@@ -542,6 +542,19 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 10,
   },
+  categoryCompleteBadge: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
+  },
   // Modal for viewing puzzles in a category
   modalContainer: {
     flex: 1,
