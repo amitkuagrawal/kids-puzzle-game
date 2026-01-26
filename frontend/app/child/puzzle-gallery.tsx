@@ -580,6 +580,15 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: 'white',
   },
+  modalHeaderCount: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'white',
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
   puzzlesScrollView: {
     flex: 1,
   },
@@ -600,10 +609,24 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 3,
     elevation: 3,
+    position: 'relative',
   },
   puzzleGridImage: {
     width: '100%',
     height: '100%',
+  },
+  puzzleSolvedBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
   },
   // Empty state
   emptyContainer: {
