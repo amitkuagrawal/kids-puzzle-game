@@ -306,6 +306,8 @@ export default function PuzzleGallery() {
     if (!selectedServerCategory) return null;
     
     const isLocalCategory = selectedServerCategory.category === 'My Pictures';
+    const isComplete = isCategoryComplete(selectedServerCategory);
+    const solvedCount = getSolvedCount(selectedServerCategory);
     
     return (
       <Modal
@@ -322,29 +324,41 @@ export default function PuzzleGallery() {
             <View style={styles.modalHeaderTitle}>
               <Text style={styles.modalHeaderIcon}>{selectedServerCategory.icon}</Text>
               <Text style={styles.modalHeaderText}>{selectedServerCategory.category}</Text>
+              {isComplete && (
+                <Ionicons name="checkmark-circle" size={24} color="#4CAF50" style={{ marginLeft: 8 }} />
+              )}
             </View>
-            <View style={styles.placeholder} />
+            <Text style={styles.modalHeaderCount}>{solvedCount}/{selectedServerCategory.puzzles.length}</Text>
           </View>
           
           {/* Puzzles Grid */}
           <ScrollView style={styles.puzzlesScrollView} contentContainerStyle={styles.puzzlesGridContainer}>
-            {selectedServerCategory.puzzles.map((puzzle) => (
-              <TouchableOpacity
-                key={puzzle.id}
-                style={styles.puzzleGridCard}
-                onPress={() => {
-                  closeCategoryView();
-                  selectPuzzle(puzzle, isLocalCategory);
-                }}
-                activeOpacity={0.7}
-              >
-                <Image
-                  source={{ uri: getImageUri(puzzle.image_base64) }}
-                  style={styles.puzzleGridImage}
-                  resizeMode="cover"
-                />
-              </TouchableOpacity>
-            ))}
+            {selectedServerCategory.puzzles.map((puzzle) => {
+              const isSolved = solvedPuzzles.has(puzzle.id);
+              return (
+                <TouchableOpacity
+                  key={puzzle.id}
+                  style={styles.puzzleGridCard}
+                  onPress={() => {
+                    closeCategoryView();
+                    selectPuzzle(puzzle, isLocalCategory);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Image
+                    source={{ uri: getImageUri(puzzle.image_base64) }}
+                    style={styles.puzzleGridImage}
+                    resizeMode="cover"
+                  />
+                  {/* Solved checkmark badge */}
+                  {isSolved && (
+                    <View style={styles.puzzleSolvedBadge}>
+                      <Ionicons name="checkmark-circle" size={28} color="#4CAF50" />
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
           </ScrollView>
         </SafeAreaView>
       </Modal>
