@@ -45,10 +45,22 @@ export default function PuzzleGallery() {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [selectedServerCategory, setSelectedServerCategory] = useState<CategoryData | null>(null);
+  const [solvedPuzzles, setSolvedPuzzles] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadAllPuzzles();
+    loadSolvedPuzzles();
   }, []);
+
+  const loadSolvedPuzzles = async () => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/scores/solved`);
+      const data = await response.json();
+      setSolvedPuzzles(new Set(data.solved_puzzles || []));
+    } catch (error) {
+      console.error('Error fetching solved puzzles:', error);
+    }
+  };
 
   const loadAllPuzzles = async () => {
     try {
