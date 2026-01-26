@@ -16,6 +16,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Analytics } from '../../utils/analytics';
+import { markPuzzleCompleted } from '../../utils/localStorage';
 
 const { width, height } = Dimensions.get('window');
 const PUZZLE_SIZE = width - 40;
@@ -39,11 +40,11 @@ interface ScoreEntry {
 export default function PuzzleGame() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { puzzleId, puzzleName, imageBase64, difficulty, pieces } = params;
+  const { puzzleId, puzzleName, imageBase64, difficulty, pieces, level, puzzleIndex, totalPuzzles } = params;
   
   const numPieces = parseInt(pieces as string);
-  const cols = difficulty === 'baby_easy' ? 2 : difficulty === 'easy' ? 3 : difficulty === 'medium' ? 3 : 4;
-  const rows = difficulty === 'baby_easy' ? 2 : difficulty === 'easy' ? 3 : difficulty === 'medium' ? 4 : 4;
+  const cols = difficulty === 'baby_easy' ? 2 : difficulty === 'easy' ? 3 : difficulty === 'medium' ? 3 : difficulty === 'expert' ? 4 : 4;
+  const rows = difficulty === 'baby_easy' ? 2 : difficulty === 'easy' ? 3 : difficulty === 'medium' ? 4 : difficulty === 'expert' ? 5 : 4;
   
   const [puzzlePieces, setPuzzlePieces] = useState<PuzzlePiece[]>([]);
   const [selectedPiece, setSelectedPiece] = useState<number | null>(null);
@@ -53,6 +54,7 @@ export default function PuzzleGame() {
   const [isComplete, setIsComplete] = useState(false);
   const [topScores, setTopScores] = useState<ScoreEntry[]>([]);
   const [showScoreboard, setShowScoreboard] = useState(false);
+  const [levelUnlocked, setLevelUnlocked] = useState(false);
   const timerRef = useRef<any>(null);
   const confettiAnim = useRef(new Animated.Value(0)).current;
 
@@ -116,26 +118,36 @@ export default function PuzzleGame() {
 
   const checkCompletion = async (pieces: PuzzlePiece[]) => {
     const isComplete = pieces.every(piece => piece.correctPosition === piece.currentPosition);
-    
+
     if (isComplete) {
       setIsComplete(true);
       if (timerRef.current) clearInterval(timerRef.current);
-      
+
       // Calculate score
       const finalScore = calculateScore();
-      
+
       // Track puzzle completion analytics (non-blocking)
       Analytics.puzzleCompleted(
-        puzzleId as string, 
-        difficulty as string, 
-        timer, 
-        moves, 
+        puzzleId as string,
+        difficulty as string,
+        timer,
+        moves,
         finalScore
       );
-      
+
       // Save score in background (don't wait)
       saveScore(finalScore).catch(err => console.error('Error saving score:', err));
-      
+
+      // Track level progress if level parameter is present
+      if (level) {
+        try {
+          const unlocked = await markPuzzleCompleted(parseInt(level as string));
+          setLevelUnlocked(unlocked);
+        } catch (error) {
+          console.error('Error tracking level progress:', error);
+        }
+      }
+
       // Show celebration immediately
       playCelebration();
     }
@@ -372,6 +384,23 @@ export default function PuzzleGame() {
               <Ionicons name="trophy" size={40} color="#FFD700" />
               <Text style={styles.congratsText}>Amazing!</Text>
               <Text style={styles.completionMessage}>You completed the puzzle!</Text>
+
+              {/* Level unlock notification */}
+              {levelUnlocked && (
+                <View style={styles.levelUnlockBanner}>
+                  <Ionicons name="lock-open" size={30} color="#4CAF50" />
+                  <Text style={styles.levelUnlockText}>New Level Unlocked! 🎉</Text>
+                </View>
+              )}
+
+              {/* Puzzle progress in level */}
+              {level && puzzleIndex && totalPuzzles && (
+                <View style={styles.progressBanner}>
+                  <Text style={styles.progressText}>
+                    Puzzle {puzzleIndex} of {totalPuzzles} completed
+                  </Text>
+                </View>
+              )}
               
               <View style={styles.scoreContainer}>
                 <View style={styles.scoreItem}>
@@ -407,6 +436,7 @@ export default function PuzzleGame() {
                     setIsComplete(false);
                     setTimer(0);
                     setMoves(0);
+                    setLevelUnlocked(false);
                     initializePuzzle();
                     startTimer();
                     confettiAnim.setValue(0);
@@ -415,15 +445,17 @@ export default function PuzzleGame() {
                   <Ionicons name="refresh" size={22} color="white" />
                   <Text style={styles.buttonText}>Play Again</Text>
                 </TouchableOpacity>
-                
-                <TouchableOpacity
-                  style={[styles.button, styles.newPuzzleButton]}
-                  onPress={() => router.push('/child/puzzle-gallery')}
-                >
-                  <Ionicons name="grid" size={22} color="white" />
-                  <Text style={styles.buttonText}>New Puzzle</Text>
-                </TouchableOpacity>
-                
+
+                {level && (
+                  <TouchableOpacity
+                    style={[styles.button, styles.levelsButton]}
+                    onPress={() => router.push('/child/level-select')}
+                  >
+                    <Ionicons name="layers" size={22} color="white" />
+                    <Text style={styles.buttonText}>Back to Levels</Text>
+                  </TouchableOpacity>
+                )}
+
                 <TouchableOpacity
                   style={[styles.button, styles.homeButton]}
                   onPress={() => router.push('/')}
@@ -654,6 +686,34 @@ const styles = StyleSheet.create({
     marginTop: 5,
     fontWeight: '600',
   },
+  levelUnlockBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E8F5E9',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 12,
+    marginTop: 15,
+    gap: 10,
+  },
+  levelUnlockText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#4CAF50',
+  },
+  progressBanner: {
+    backgroundColor: '#E3F2FD',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 12,
+    marginTop: 10,
+  },
+  progressText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2196F3',
+    textAlign: 'center',
+  },
   scoreContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -695,6 +755,9 @@ const styles = StyleSheet.create({
   },
   newPuzzleButton: {
     backgroundColor: '#FF9800',
+  },
+  levelsButton: {
+    backgroundColor: '#9C27B0',
   },
   homeButton: {
     backgroundColor: '#2196F3',
