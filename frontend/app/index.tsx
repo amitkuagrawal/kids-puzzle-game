@@ -226,6 +226,15 @@ export default function Index() {
           <Ionicons name="game-controller" size={50} color="white" />
           <Text style={styles.buttonText}>Play Puzzle!</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.button, styles.parentButton]}
+          onPress={() => router.push('/parent/dashboard')}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="people" size={40} color="white" />
+          <Text style={styles.buttonTextSmall}>Parent Dashboard</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -332,6 +341,10 @@ const styles = StyleSheet.create({
   },
   childButton: {
     backgroundColor: '#FD7979',
+  },
+  parentButton: {
+    backgroundColor: '#6A1B9A',
+    height: 100,
   },
   adminButton: {
     backgroundColor: '#FDACAC',

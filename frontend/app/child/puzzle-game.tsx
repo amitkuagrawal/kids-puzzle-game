@@ -17,6 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Analytics } from '../../utils/analytics';
 import { markPuzzleCompleted } from '../../utils/localStorage';
+import { recordPuzzleCompletion, updateStreak } from '../../services/firebase-service';
 
 const { width, height } = Dimensions.get('window');
 const PUZZLE_SIZE = width - 40;
@@ -55,6 +56,7 @@ export default function PuzzleGame() {
   const [topScores, setTopScores] = useState<ScoreEntry[]>([]);
   const [showScoreboard, setShowScoreboard] = useState(false);
   const [levelUnlocked, setLevelUnlocked] = useState(false);
+  const [newAchievements, setNewAchievements] = useState<string[]>([]);
   const timerRef = useRef<any>(null);
   const confettiAnim = useRef(new Animated.Value(0)).current;
 
@@ -141,8 +143,21 @@ export default function PuzzleGame() {
       // Track level progress if level parameter is present
       if (level) {
         try {
+          // Update local storage
           const unlocked = await markPuzzleCompleted(parseInt(level as string));
           setLevelUnlocked(unlocked);
+
+          // Update Firebase (non-blocking, catches errors internally)
+          recordPuzzleCompletion(parseInt(level as string))
+            .then((result) => {
+              if (result.levelUnlocked) {
+                setLevelUnlocked(true);
+              }
+              if (result.newAchievements.length > 0) {
+                setNewAchievements(result.newAchievements);
+              }
+            })
+            .catch((err) => console.error('Error recording Firebase completion:', err));
         } catch (error) {
           console.error('Error tracking level progress:', error);
         }
@@ -401,7 +416,21 @@ export default function PuzzleGame() {
                   </Text>
                 </View>
               )}
-              
+
+              {/* New Achievements */}
+              {newAchievements.length > 0 && (
+                <View style={styles.achievementsBanner}>
+                  <Text style={styles.achievementsTitle}>🎉 New Achievements!</Text>
+                  <View style={styles.achievementsContainer}>
+                    {newAchievements.map((achId) => (
+                      <View key={achId} style={styles.achievementBadge}>
+                        <Text style={styles.achievementText}>{achId.replace(/_/g, ' ')}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              )}
+
               <View style={styles.scoreContainer}>
                 <View style={styles.scoreItem}>
                   <Ionicons name="time" size={24} color="#4CAF50" />
@@ -713,6 +742,38 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#2196F3',
     textAlign: 'center',
+  },
+  achievementsBanner: {
+    backgroundColor: '#FFF3E0',
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    borderRadius: 12,
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  achievementsTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#F57C00',
+    marginBottom: 8,
+  },
+  achievementsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    justifyContent: 'center',
+  },
+  achievementBadge: {
+    backgroundColor: '#FF9800',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 15,
+  },
+  achievementText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: 'white',
+    textTransform: 'capitalize',
   },
   scoreContainer: {
     flexDirection: 'row',

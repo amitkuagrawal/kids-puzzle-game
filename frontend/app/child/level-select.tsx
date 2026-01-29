@@ -44,7 +44,7 @@ const LEVELS: LevelData[] = [
     gridSize: '2×2',
     pieces: 4,
     difficulty: 'baby_easy',
-    description: 'Super Easy - Perfect to Start!',
+    description: '5 Puzzles to Complete',
   },
   {
     level: 2,
@@ -54,7 +54,7 @@ const LEVELS: LevelData[] = [
     gridSize: '3×3',
     pieces: 9,
     difficulty: 'easy',
-    description: 'Easy - Getting Better!',
+    description: '5 Puzzles to Complete',
   },
   {
     level: 3,
@@ -64,7 +64,7 @@ const LEVELS: LevelData[] = [
     gridSize: '3×4',
     pieces: 12,
     difficulty: 'medium',
-    description: 'Medium - You Can Do It!',
+    description: '5 Puzzles to Complete',
   },
   {
     level: 4,
@@ -74,7 +74,7 @@ const LEVELS: LevelData[] = [
     gridSize: '4×4',
     pieces: 16,
     difficulty: 'hard',
-    description: 'Hard - Almost There!',
+    description: '5 Puzzles to Complete',
   },
   {
     level: 5,
@@ -84,7 +84,7 @@ const LEVELS: LevelData[] = [
     gridSize: '4×5',
     pieces: 20,
     difficulty: 'expert',
-    description: 'Expert - Puzzle Master!',
+    description: '5 Puzzles to Complete',
   },
 ];
 
@@ -224,7 +224,12 @@ export default function LevelSelect() {
           <Ionicons name="arrow-back" size={32} color="white" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Choose a Level!</Text>
-        <View style={styles.placeholder} />
+        <TouchableOpacity
+          onPress={() => router.push('/child/leaderboard')}
+          style={styles.leaderboardButton}
+        >
+          <Ionicons name="trophy" size={28} color="white" />
+        </TouchableOpacity>
       </View>
 
       {/* Level Selection */}
@@ -323,6 +328,9 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   backButton: {
+    padding: 5,
+  },
+  leaderboardButton: {
     padding: 5,
   },
   headerTitle: {
