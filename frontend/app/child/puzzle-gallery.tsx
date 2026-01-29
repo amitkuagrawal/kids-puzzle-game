@@ -579,6 +579,15 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: 'white',
   },
+  modalHeaderCount: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'white',
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
   puzzlesScrollView: {
     flex: 1,
   },
