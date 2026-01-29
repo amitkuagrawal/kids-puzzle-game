@@ -13,7 +13,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getLevelProgress, LevelProgress } from '../../utils/localStorage';
-import { getUserProfile } from '../../services/firebase-service';
+import { getUserProfile, getGroup, leaveGroup } from '../../services/firebase-service';
 
 const { width } = Dimensions.get('window');
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
