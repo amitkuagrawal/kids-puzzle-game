@@ -98,6 +98,9 @@ export default function LevelSelect() {
   const [loading, setLoading] = useState(true);
   const [levelPuzzles, setLevelPuzzles] = useState<{ [key: number]: Puzzle[] }>({});
   const [checkingProfile, setCheckingProfile] = useState(true);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [userGroup, setUserGroup] = useState<any>(null);
+  const [showWelcomeBack, setShowWelcomeBack] = useState(false);
 
   useEffect(() => {
     checkUserProfile();
@@ -111,6 +114,21 @@ export default function LevelSelect() {
         router.replace('/child/welcome');
         return;
       }
+      
+      setUserProfile(profile);
+      
+      // Check if user is in a group
+      if (profile.groupId) {
+        const { getGroup } = await import('../../services/firebase-service');
+        const group = await getGroup(profile.groupId);
+        if (group) {
+          setUserGroup(group);
+          setShowWelcomeBack(true);
+          setCheckingProfile(false);
+          return;
+        }
+      }
+      
       setCheckingProfile(false);
       loadProgressAndPuzzles();
     } catch (error) {
@@ -118,6 +136,20 @@ export default function LevelSelect() {
       setCheckingProfile(false);
       loadProgressAndPuzzles();
     }
+  };
+
+  const handleContinueWithGroup = () => {
+    setShowWelcomeBack(false);
+    loadProgressAndPuzzles();
+  };
+
+  const handlePlayIndividually = async () => {
+    // Leave the group and play alone
+    const { leaveGroup } = await import('../../services/firebase-service');
+    await leaveGroup();
+    setUserGroup(null);
+    setShowWelcomeBack(false);
+    loadProgressAndPuzzles();
   };
 
   const loadProgressAndPuzzles = async () => {
