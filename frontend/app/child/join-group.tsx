@@ -9,16 +9,20 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Dimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { joinGroup, getGroup } from '../../services/firebase-service';
 
+const { height } = Dimensions.get('window');
+
 export default function JoinGroup() {
   const router = useRouter();
   const [groupCode, setGroupCode] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showCodeInput, setShowCodeInput] = useState(false);
 
   const handleJoinGroup = async () => {
     const code = groupCode.trim().toUpperCase();
@@ -36,129 +40,136 @@ export default function JoinGroup() {
     setLoading(true);
 
     try {
-      // Check if group exists
       const group = await getGroup(code);
 
       if (!group) {
-        Alert.alert(
-          'Group Not Found',
-          `No group found with code "${code}". Please check the code and try again.`
-        );
+        Alert.alert('Group Not Found', `No group found with code "${code}".`);
         setLoading(false);
         return;
       }
 
-      // Join the group
       const success = await joinGroup(code);
 
       if (success) {
         Alert.alert(
           '🎉 Success!',
-          `You joined "${group.groupName}"!\n\nNow you can compete with your friends on the leaderboard!`,
-          [
-            {
-              text: 'Start Playing!',
-              onPress: () => router.replace('/child/level-select'),
-            },
-          ]
+          `You joined "${group.groupName}"!`,
+          [{ text: 'Start Playing!', onPress: () => router.replace('/child/level-select') }]
         );
       } else {
-        Alert.alert('Error', 'Could not join group. Please try again.');
+        Alert.alert('Error', 'Could not join group.');
       }
     } catch (error) {
       console.error('Error joining group:', error);
-      Alert.alert('Error', 'Could not join group. Please check your internet connection.');
+      Alert.alert('Error', 'Could not join group.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSkip = () => {
-    Alert.alert(
-      'Skip Joining Group?',
-      'You can still play puzzles, but you won\'t be able to compete with friends on the leaderboard.\n\nYou can join a group later from settings.',
-      [
-        {
-          text: 'Join Later',
-          onPress: () => router.replace('/child/level-select'),
-        },
-        {
-          text: 'Enter Code',
-          style: 'cancel',
-        },
-      ]
-    );
+  const handlePlayAlone = () => {
+    router.replace('/child/level-select');
   };
+
+  if (showCodeInput) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <KeyboardAvoidingView
+          style={styles.content}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+          {/* Back Button */}
+          <TouchableOpacity style={styles.backBtn} onPress={() => setShowCodeInput(false)}>
+            <Ionicons name="arrow-back" size={28} color="#2196F3" />
+          </TouchableOpacity>
+
+          {/* Header */}
+          <View style={styles.headerSmall}>
+            <Ionicons name="people-circle" size={60} color="#2196F3" />
+            <Text style={styles.headerTitleSmall}>Enter Group Code</Text>
+          </View>
+
+          {/* Code Input */}
+          <View style={styles.inputCard}>
+            <TextInput
+              style={styles.input}
+              placeholder="ABC123"
+              value={groupCode}
+              onChangeText={(text) => setGroupCode(text.toUpperCase())}
+              maxLength={6}
+              autoCapitalize="characters"
+              autoCorrect={false}
+              autoFocus={true}
+            />
+
+            <TouchableOpacity
+              style={[styles.actionButton, styles.joinBtn, loading && styles.btnDisabled]}
+              onPress={handleJoinGroup}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <>
+                  <Ionicons name="enter" size={24} color="white" />
+                  <Text style={styles.actionButtonText}>Join Group</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          {/* Hint */}
+          <Text style={styles.hintText}>
+            Ask your parent or teacher for the 6-character code
+          </Text>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <KeyboardAvoidingView
-        style={styles.content}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
+      <View style={styles.content}>
         {/* Header */}
-        <View style={styles.headerContainer}>
-          <Ionicons name="people-circle" size={80} color="#2196F3" />
-          <Text style={styles.headerTitle}>Join a Group!</Text>
-          <Text style={styles.headerText}>
-            Enter the 6-character code your parent or teacher gave you
-          </Text>
+        <View style={styles.header}>
+          <Text style={styles.emoji}>🎮</Text>
+          <Text style={styles.headerTitle}>How do you want to play?</Text>
         </View>
 
-        {/* Code Input Card */}
-        <View style={styles.inputCard}>
-          <Text style={styles.inputLabel}>Group Code</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="ABC123"
-            value={groupCode}
-            onChangeText={(text) => setGroupCode(text.toUpperCase())}
-            maxLength={6}
-            autoCapitalize="characters"
-            autoCorrect={false}
-            autoFocus={true}
-          />
-
-          <TouchableOpacity
-            style={[styles.joinButton, loading && styles.joinButtonDisabled]}
-            onPress={handleJoinGroup}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <>
-                <Ionicons name="enter" size={24} color="white" />
-                <Text style={styles.joinButtonText}>Join Group</Text>
-              </>
-            )}
+        {/* Options */}
+        <View style={styles.optionsContainer}>
+          {/* Play Alone Option */}
+          <TouchableOpacity style={styles.optionCard} onPress={handlePlayAlone}>
+            <View style={[styles.optionIcon, { backgroundColor: '#E8F5E9' }]}>
+              <Ionicons name="person" size={40} color="#4CAF50" />
+            </View>
+            <Text style={styles.optionTitle}>Play Alone</Text>
+            <Text style={styles.optionDesc}>Practice puzzles by yourself</Text>
+            <View style={[styles.optionBtn, { backgroundColor: '#4CAF50' }]}>
+              <Text style={styles.optionBtnText}>Start Playing</Text>
+              <Ionicons name="arrow-forward" size={20} color="white" />
+            </View>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-            <Text style={styles.skipButtonText}>Skip for Now</Text>
+          {/* Join Group Option */}
+          <TouchableOpacity style={styles.optionCard} onPress={() => setShowCodeInput(true)}>
+            <View style={[styles.optionIcon, { backgroundColor: '#E3F2FD' }]}>
+              <Ionicons name="people" size={40} color="#2196F3" />
+            </View>
+            <Text style={styles.optionTitle}>Join a Group</Text>
+            <Text style={styles.optionDesc}>Compete with friends & family</Text>
+            <View style={[styles.optionBtn, { backgroundColor: '#2196F3' }]}>
+              <Text style={styles.optionBtnText}>Enter Code</Text>
+              <Ionicons name="arrow-forward" size={20} color="white" />
+            </View>
           </TouchableOpacity>
         </View>
 
-        {/* Info Card */}
-        <View style={styles.infoCard}>
-          <Text style={styles.infoTitle}>💡 What's a Group?</Text>
-          <Text style={styles.infoText}>
-            A group lets you see how your friends are doing! You'll see a leaderboard showing:{'\n'}
-            {'\n'}• Who's at which level
-            {'\n'}• How many puzzles everyone completed
-            {'\n'}• Who has the longest streak
-            {'\n'}{'\n'}
-            It's fun to compete with friends! 🏆
-          </Text>
-        </View>
-
-        {/* Parent Info */}
-        <View style={styles.parentCard}>
-          <Text style={styles.parentText}>
-            👨‍👩‍👧‍👦 Parents: Tap "Parent Dashboard" on the home screen to create a group code
-          </Text>
-        </View>
-      </KeyboardAvoidingView>
+        {/* Footer */}
+        <Text style={styles.footerText}>
+          You can join a group later from settings
+        </Text>
+      </View>
     </SafeAreaView>
   );
 }
@@ -166,112 +177,145 @@ export default function JoinGroup() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#E3F2FD',
+    backgroundColor: '#FEEAC9',
   },
   content: {
     flex: 1,
     padding: 20,
     justifyContent: 'center',
   },
-  headerContainer: {
+  backBtn: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    padding: 10,
+    zIndex: 10,
+  },
+  header: {
     alignItems: 'center',
     marginBottom: 30,
   },
+  emoji: {
+    fontSize: 50,
+  },
   headerTitle: {
-    fontSize: 36,
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: '#333',
+    marginTop: 10,
+    textAlign: 'center',
+  },
+  headerSmall: {
+    alignItems: 'center',
+    marginBottom: 20,
+    marginTop: 40,
+  },
+  headerTitleSmall: {
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#2196F3',
-    marginTop: 15,
+    marginTop: 10,
   },
-  headerText: {
-    fontSize: 16,
+  optionsContainer: {
+    flexDirection: 'row',
+    gap: 15,
+  },
+  optionCard: {
+    flex: 1,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 15,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  optionIcon: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  optionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 5,
+  },
+  optionDesc: {
+    fontSize: 12,
     color: '#666',
     textAlign: 'center',
-    marginTop: 10,
-    paddingHorizontal: 20,
+    marginBottom: 12,
+  },
+  optionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  optionBtnText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: 'white',
   },
   inputCard: {
     backgroundColor: 'white',
     borderRadius: 20,
-    padding: 25,
-    marginBottom: 20,
+    padding: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 5,
-  },
-  inputLabel: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 12,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
   },
   input: {
     backgroundColor: '#F5F5F5',
     borderRadius: 12,
-    padding: 18,
-    fontSize: 24,
-    letterSpacing: 4,
+    padding: 15,
+    fontSize: 28,
+    letterSpacing: 6,
     textAlign: 'center',
     fontWeight: 'bold',
     borderWidth: 2,
     borderColor: '#2196F3',
-    marginBottom: 20,
+    marginBottom: 15,
   },
-  joinButton: {
-    backgroundColor: '#4CAF50',
+  actionButton: {
     borderRadius: 15,
-    padding: 18,
+    padding: 15,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
-    marginBottom: 12,
   },
-  joinButtonDisabled: {
+  joinBtn: {
+    backgroundColor: '#4CAF50',
+  },
+  btnDisabled: {
     backgroundColor: '#A5D6A7',
   },
-  joinButtonText: {
+  actionButtonText: {
     fontSize: 18,
     fontWeight: 'bold',
     color: 'white',
   },
-  skipButton: {
-    padding: 12,
-    alignItems: 'center',
-  },
-  skipButtonText: {
-    fontSize: 16,
-    color: '#666',
-    textDecorationLine: 'underline',
-  },
-  infoCard: {
-    backgroundColor: '#FFF3E0',
-    borderRadius: 15,
-    padding: 20,
-    marginBottom: 15,
-  },
-  infoTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#F57C00',
-    marginBottom: 10,
-  },
-  infoText: {
+  hintText: {
     fontSize: 14,
-    color: '#555',
-    lineHeight: 20,
-  },
-  parentCard: {
-    backgroundColor: '#F3E5F5',
-    borderRadius: 12,
-    padding: 15,
-  },
-  parentText: {
-    fontSize: 12,
-    color: '#6A1B9A',
+    color: '#666',
     textAlign: 'center',
-    lineHeight: 18,
+    marginTop: 15,
+  },
+  footerText: {
+    fontSize: 14,
+    color: '#888',
+    textAlign: 'center',
+    marginTop: 25,
   },
 });
