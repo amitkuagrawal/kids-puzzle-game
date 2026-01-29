@@ -215,6 +215,8 @@ export default function PuzzleGallery() {
     const previewImage = categoryData.puzzles.length > 0 
       ? getImageUri(categoryData.puzzles[0].image_base64) 
       : null;
+    const isComplete = isCategoryComplete(categoryData);
+    const solvedCount = getSolvedCount(categoryData);
     
     return (
       <TouchableOpacity
@@ -234,10 +236,16 @@ export default function PuzzleGallery() {
             <Text style={styles.categoryPlaceholderIcon}>{categoryData.icon}</Text>
           </View>
         )}
+        {/* Category complete badge */}
+        {isComplete && (
+          <View style={styles.categoryCompleteBadge}>
+            <Ionicons name="checkmark-circle" size={32} color="#4CAF50" />
+          </View>
+        )}
         <View style={[styles.categoryCardFooter, { backgroundColor: categoryData.color }]}>
           <Text style={styles.categoryCardIcon}>{categoryData.icon}</Text>
           <Text style={styles.categoryCardTitle}>{categoryData.category}</Text>
-          <Text style={styles.categoryCardCount}>{categoryData.puzzles.length}</Text>
+          <Text style={styles.categoryCardCount}>{solvedCount}/{categoryData.puzzles.length}</Text>
         </View>
       </TouchableOpacity>
     );
