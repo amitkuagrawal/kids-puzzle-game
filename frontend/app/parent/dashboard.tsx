@@ -338,6 +338,20 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#6A1B9A',
   },
+  homeButton: {
+    backgroundColor: '#2196F3',
+    borderRadius: 12,
+    padding: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  homeButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'white',
+  },
   instructionsCard: {
     backgroundColor: '#FFF8E1',
     borderRadius: 12,
