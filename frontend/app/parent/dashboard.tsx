@@ -142,31 +142,26 @@ export default function ParentDashboard() {
               <Text style={styles.codeLabel}>Your Group Code</Text>
               <Text style={styles.codeText}>{createdGroup.groupId}</Text>
               <Text style={styles.groupNameText}>{createdGroup.groupName}</Text>
-              <Text style={styles.dateText}>
-                Created: {new Date(createdGroup.createdAt).toLocaleDateString()}
-              </Text>
             </View>
 
             {/* Action Buttons */}
             <View style={styles.actionsRow}>
               <TouchableOpacity style={styles.shareButton} onPress={handleShareCode}>
                 <Ionicons name="share-social" size={20} color="white" />
-                <Text style={styles.shareButtonText}>Share Code</Text>
+                <Text style={styles.shareButtonText}>Share</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.newButton} onPress={handleCreateAnother}>
                 <Ionicons name="add" size={20} color="#6A1B9A" />
-                <Text style={styles.newButtonText}>New Group</Text>
+                <Text style={styles.newButtonText}>New</Text>
               </TouchableOpacity>
             </View>
 
-            {/* Instructions */}
-            <View style={styles.instructionsCard}>
-              <Text style={styles.instructionsTitle}>📝 Next Steps</Text>
-              <Text style={styles.instructionText}>1. Open the app on your child's device</Text>
-              <Text style={styles.instructionText}>2. Enter child's first name</Text>
-              <Text style={styles.instructionText}>3. Choose "Join a Group" and enter code</Text>
-            </View>
+            {/* Go Home Button */}
+            <TouchableOpacity style={styles.homeButton} onPress={() => router.replace('/')}>
+              <Ionicons name="home" size={22} color="white" />
+              <Text style={styles.homeButtonText}>Go Home</Text>
+            </TouchableOpacity>
           </>
         )}
       </View>
