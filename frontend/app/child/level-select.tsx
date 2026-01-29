@@ -224,12 +224,12 @@ export default function LevelSelect() {
     return progress ? level <= progress.currentLevel : false;
   };
 
-  if (loading) {
+  if (checkingProfile || loading) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#4CAF50" />
-          <Text style={styles.loadingText}>Loading levels...</Text>
+          <Text style={styles.loadingText}>{checkingProfile ? 'Getting ready...' : 'Loading levels...'}</Text>
         </View>
       </SafeAreaView>
     );
