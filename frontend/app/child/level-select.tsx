@@ -97,10 +97,28 @@ export default function LevelSelect() {
   const [progress, setProgress] = useState<LevelProgress | null>(null);
   const [loading, setLoading] = useState(true);
   const [levelPuzzles, setLevelPuzzles] = useState<{ [key: number]: Puzzle[] }>({});
+  const [checkingProfile, setCheckingProfile] = useState(true);
 
   useEffect(() => {
-    loadProgressAndPuzzles();
+    checkUserProfile();
   }, []);
+
+  const checkUserProfile = async () => {
+    try {
+      const profile = await getUserProfile();
+      if (!profile) {
+        // No profile, redirect to welcome
+        router.replace('/child/welcome');
+        return;
+      }
+      setCheckingProfile(false);
+      loadProgressAndPuzzles();
+    } catch (error) {
+      console.error('Error checking profile:', error);
+      setCheckingProfile(false);
+      loadProgressAndPuzzles();
+    }
+  };
 
   const loadProgressAndPuzzles = async () => {
     try {
