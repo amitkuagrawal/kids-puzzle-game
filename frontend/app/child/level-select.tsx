@@ -267,6 +267,35 @@ export default function LevelSelect() {
     );
   }
 
+  // Show welcome back screen if user is in a group
+  if (showWelcomeBack && userProfile && userGroup) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.welcomeBackContainer}>
+          <Text style={styles.welcomeBackEmoji}>👋</Text>
+          <Text style={styles.welcomeBackTitle}>Welcome back, {userProfile.displayName}!</Text>
+          
+          <View style={styles.groupInfoCard}>
+            <Ionicons name="people" size={40} color="#2196F3" />
+            <Text style={styles.groupInfoTitle}>You're in a group!</Text>
+            <Text style={styles.groupInfoName}>{userGroup.groupName}</Text>
+            <Text style={styles.groupInfoCode}>Code: {userGroup.groupId}</Text>
+          </View>
+          
+          <TouchableOpacity style={styles.continueGroupButton} onPress={handleContinueWithGroup}>
+            <Ionicons name="trophy" size={24} color="white" />
+            <Text style={styles.continueGroupText}>Continue with Group</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.playAloneButton} onPress={handlePlayIndividually}>
+            <Ionicons name="person" size={20} color="#666" />
+            <Text style={styles.playAloneText}>Play Individually (Leave Group)</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
