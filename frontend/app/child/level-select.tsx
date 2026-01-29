@@ -119,7 +119,6 @@ export default function LevelSelect() {
       
       // Check if user is in a group
       if (profile.groupId) {
-        const { getGroup } = await import('../../services/firebase-service');
         const group = await getGroup(profile.groupId);
         if (group) {
           setUserGroup(group);
@@ -145,7 +144,6 @@ export default function LevelSelect() {
 
   const handlePlayIndividually = async () => {
     // Leave the group and play alone
-    const { leaveGroup } = await import('../../services/firebase-service');
     await leaveGroup();
     setUserGroup(null);
     setShowWelcomeBack(false);
