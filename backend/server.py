@@ -392,6 +392,17 @@ async def get_scores(puzzle_id: str, difficulty: str):
         logging.error(f"Error fetching scores: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.get("/scores/solved")
+async def get_solved_puzzles():
+    """Get list of all solved puzzle IDs (puzzles that have at least one score)"""
+    try:
+        # Get distinct puzzle IDs from scores collection
+        solved_puzzles = await db.scores.distinct("puzzle_id")
+        return {"solved_puzzles": solved_puzzles}
+    except Exception as e:
+        logging.error(f"Error fetching solved puzzles: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Analytics Routes
 @api_router.post("/analytics/event")
 async def log_analytics_event(event: AnalyticsEventCreate):
