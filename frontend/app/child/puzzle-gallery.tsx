@@ -45,10 +45,33 @@ export default function PuzzleGallery() {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [selectedServerCategory, setSelectedServerCategory] = useState<CategoryData | null>(null);
+  const [solvedPuzzles, setSolvedPuzzles] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadAllPuzzles();
+    loadSolvedPuzzles();
   }, []);
+
+  const loadSolvedPuzzles = async () => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/scores/solved`);
+      const data = await response.json();
+      setSolvedPuzzles(new Set(data.solved_puzzles || []));
+    } catch (error) {
+      console.error('Error fetching solved puzzles:', error);
+    }
+  };
+
+  // Check if a category is fully completed (all puzzles solved)
+  const isCategoryComplete = (categoryData: CategoryData): boolean => {
+    if (categoryData.puzzles.length === 0) return false;
+    return categoryData.puzzles.every(puzzle => solvedPuzzles.has(puzzle.id));
+  };
+
+  // Count solved puzzles in a category
+  const getSolvedCount = (categoryData: CategoryData): number => {
+    return categoryData.puzzles.filter(puzzle => solvedPuzzles.has(puzzle.id)).length;
+  };
 
   const loadAllPuzzles = async () => {
     try {
