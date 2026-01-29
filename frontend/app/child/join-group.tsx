@@ -51,11 +51,8 @@ export default function JoinGroup() {
       const success = await joinGroup(code);
 
       if (success) {
-        Alert.alert(
-          '🎉 Success!',
-          `You joined "${group.groupName}"!`,
-          [{ text: 'Start Playing!', onPress: () => router.replace('/child/level-select') }]
-        );
+        // Navigate directly to level-select after successful join
+        router.replace('/child/level-select');
       } else {
         Alert.alert('Error', 'Could not join group.');
       }
