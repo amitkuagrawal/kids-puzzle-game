@@ -1,14 +1,16 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Analytics } from '../utils/analytics';
+import { getUserProfile } from '../services/firebase-service';
 
 const { width } = Dimensions.get('window');
 
 export default function Index() {
   const router = useRouter();
-  
+  const [isLoading, setIsLoading] = useState(false);
+
   // Animation refs for puzzle pieces
   const piece1Anim = useRef(new Animated.Value(0)).current;
   const piece2Anim = useRef(new Animated.Value(0)).current;
@@ -20,10 +22,33 @@ export default function Index() {
     // Track app opened
     Analytics.appOpened();
     Analytics.sessionStart();
-    
+
     // Start puzzle assembly animation
     startPuzzleAnimation();
   }, []);
+
+  const handlePlayPuzzle = async () => {
+    try {
+      setIsLoading(true);
+
+      // Check if user profile exists
+      const userProfile = await getUserProfile();
+
+      if (!userProfile) {
+        // No profile exists, go to welcome screen
+        router.push('/child/welcome');
+      } else {
+        // Profile exists, go directly to level select
+        router.push('/child/level-select');
+      }
+    } catch (error) {
+      console.error('Error checking user profile:', error);
+      // On error, go to welcome screen to be safe
+      router.push('/child/welcome');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const startPuzzleAnimation = () => {
     // Animate puzzle pieces coming together
@@ -194,8 +219,9 @@ export default function Index() {
       {/* Animated Puzzle Demo - Clickable */}
       <TouchableOpacity
         style={styles.puzzleDemo}
-        onPress={() => router.push('/child/level-select')}
+        onPress={handlePlayPuzzle}
         activeOpacity={0.8}
+        disabled={isLoading}
       >
         <Text style={styles.demoText}>📸 Upload Your Fav Picture!</Text>
         <View style={styles.puzzleContainer}>
@@ -220,11 +246,14 @@ export default function Index() {
       <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={[styles.button, styles.childButton]}
-          onPress={() => router.push('/child/level-select')}
+          onPress={handlePlayPuzzle}
           activeOpacity={0.8}
+          disabled={isLoading}
         >
           <Ionicons name="game-controller" size={50} color="white" />
-          <Text style={styles.buttonText}>Play Puzzle!</Text>
+          <Text style={styles.buttonText}>
+            {isLoading ? 'Loading...' : 'Play Puzzle!'}
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
