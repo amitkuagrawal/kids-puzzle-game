@@ -114,9 +114,9 @@ export default function LevelSelect() {
         router.replace('/child/welcome');
         return;
       }
-      
+
       setUserProfile(profile);
-      
+
       // Check if user is in a group
       if (profile.groupId) {
         const group = await getGroup(profile.groupId);
@@ -124,10 +124,11 @@ export default function LevelSelect() {
           setUserGroup(group);
           setShowWelcomeBack(true);
           setCheckingProfile(false);
+          setLoading(false); // Must set loading to false to show welcome screen
           return;
         }
       }
-      
+
       setCheckingProfile(false);
       loadProgressAndPuzzles();
     } catch (error) {
