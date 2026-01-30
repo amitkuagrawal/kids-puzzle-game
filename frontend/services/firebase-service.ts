@@ -1,18 +1,3 @@
-import {
-  collection,
-  doc,
-  setDoc,
-  getDoc,
-  getDocs,
-  updateDoc,
-  query,
-  where,
-  orderBy,
-  limit,
-  Timestamp,
-  increment,
-} from 'firebase/firestore';
-import { db } from '../config/firebase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ==================== INTERFACES ====================
@@ -56,10 +41,10 @@ export interface LeaderboardEntry {
 
 // ==================== CONSTANTS ====================
 
-const USERS_COLLECTION = 'users';
-const GROUPS_COLLECTION = 'groups';
 const USER_ID_KEY = '@user_id';
-const USER_PROFILE_KEY = '@user_profile_cache';
+const USER_PROFILE_KEY = '@user_profile';
+const GROUPS_KEY = '@groups';
+const ALL_USERS_KEY = '@all_users';
 
 // Achievement definitions
 export const ACHIEVEMENTS = {
@@ -74,6 +59,44 @@ export const ACHIEVEMENTS = {
   STREAK_30: { id: 'streak_30', name: '30 Day Streak', icon: '🔥🔥🔥' },
   SPEED_DEMON: { id: 'speed_demon', name: 'Speed Demon', icon: '⚡' },
   PUZZLE_MASTER: { id: 'puzzle_master', name: 'Puzzle Master', icon: '👑' },
+};
+
+// ==================== HELPER FUNCTIONS ====================
+
+const getAllGroups = async (): Promise<{ [key: string]: Group }> => {
+  try {
+    const groupsJson = await AsyncStorage.getItem(GROUPS_KEY);
+    return groupsJson ? JSON.parse(groupsJson) : {};
+  } catch (error) {
+    console.error('Error getting groups:', error);
+    return {};
+  }
+};
+
+const saveAllGroups = async (groups: { [key: string]: Group }): Promise<void> => {
+  try {
+    await AsyncStorage.setItem(GROUPS_KEY, JSON.stringify(groups));
+  } catch (error) {
+    console.error('Error saving groups:', error);
+  }
+};
+
+const getAllUsers = async (): Promise<{ [key: string]: UserProfile }> => {
+  try {
+    const usersJson = await AsyncStorage.getItem(ALL_USERS_KEY);
+    return usersJson ? JSON.parse(usersJson) : {};
+  } catch (error) {
+    console.error('Error getting all users:', error);
+    return {};
+  }
+};
+
+const saveAllUsers = async (users: { [key: string]: UserProfile }): Promise<void> => {
+  try {
+    await AsyncStorage.setItem(ALL_USERS_KEY, JSON.stringify(users));
+  } catch (error) {
+    console.error('Error saving all users:', error);
+  }
 };
 
 // ==================== USER MANAGEMENT ====================
@@ -118,11 +141,13 @@ export const createUserProfile = async (displayName: string): Promise<UserProfil
       updatedAt: now,
     };
 
-    // Save to Firestore
-    await setDoc(doc(db, USERS_COLLECTION, userId), userProfile);
-
-    // Cache locally
+    // Save to local storage
     await AsyncStorage.setItem(USER_PROFILE_KEY, JSON.stringify(userProfile));
+    
+    // Also save to all users for leaderboard
+    const allUsers = await getAllUsers();
+    allUsers[userId] = userProfile;
+    await saveAllUsers(allUsers);
 
     return userProfile;
   } catch (error) {
@@ -132,39 +157,15 @@ export const createUserProfile = async (displayName: string): Promise<UserProfil
 };
 
 /**
- * Get user profile (from cache or Firestore)
+ * Get user profile
  */
 export const getUserProfile = async (): Promise<UserProfile | null> => {
   try {
-    const userId = await getUserId();
-
-    // Try cache first
-    const cachedProfile = await AsyncStorage.getItem(USER_PROFILE_KEY);
-    if (cachedProfile) {
-      const profile = JSON.parse(cachedProfile);
-      // Return cache if less than 5 minutes old
-      const cacheAge = Date.now() - new Date(profile.updatedAt).getTime();
-      if (cacheAge < 5 * 60 * 1000) {
-        return profile;
-      }
-    }
-
-    // Fetch from Firestore
-    const docRef = doc(db, USERS_COLLECTION, userId);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      const profile = docSnap.data() as UserProfile;
-      await AsyncStorage.setItem(USER_PROFILE_KEY, JSON.stringify(profile));
-      return profile;
-    }
-
-    return null;
+    const profileJson = await AsyncStorage.getItem(USER_PROFILE_KEY);
+    return profileJson ? JSON.parse(profileJson) : null;
   } catch (error) {
     console.error('Error getting user profile:', error);
-    // Return cached profile if available
-    const cachedProfile = await AsyncStorage.getItem(USER_PROFILE_KEY);
-    return cachedProfile ? JSON.parse(cachedProfile) : null;
+    return null;
   }
 };
 
@@ -173,21 +174,22 @@ export const getUserProfile = async (): Promise<UserProfile | null> => {
  */
 export const updateUserProfile = async (updates: Partial<UserProfile>): Promise<void> => {
   try {
-    const userId = await getUserId();
+    const currentProfile = await getUserProfile();
+    if (!currentProfile) return;
+
     const updatedProfile = {
+      ...currentProfile,
       ...updates,
       updatedAt: new Date().toISOString(),
     };
 
-    // Update Firestore
-    await updateDoc(doc(db, USERS_COLLECTION, userId), updatedProfile);
-
-    // Update cache
-    const currentProfile = await getUserProfile();
-    if (currentProfile) {
-      const newProfile = { ...currentProfile, ...updatedProfile };
-      await AsyncStorage.setItem(USER_PROFILE_KEY, JSON.stringify(newProfile));
-    }
+    // Save to local storage
+    await AsyncStorage.setItem(USER_PROFILE_KEY, JSON.stringify(updatedProfile));
+    
+    // Also update in all users
+    const allUsers = await getAllUsers();
+    allUsers[currentProfile.userId] = updatedProfile;
+    await saveAllUsers(allUsers);
   } catch (error) {
     console.error('Error updating user profile:', error);
     throw error;
@@ -348,14 +350,14 @@ export const createGroup = async (
   parentEmail: string
 ): Promise<Group> => {
   try {
+    const groups = await getAllGroups();
+    
     let groupCode = generateGroupCode();
     let attempts = 0;
 
     // Ensure unique group code
     while (attempts < 10) {
-      const docRef = doc(db, GROUPS_COLLECTION, groupCode);
-      const docSnap = await getDoc(docRef);
-      if (!docSnap.exists()) {
+      if (!groups[groupCode]) {
         break;
       }
       groupCode = generateGroupCode();
@@ -372,7 +374,9 @@ export const createGroup = async (
       isActive: true,
     };
 
-    await setDoc(doc(db, GROUPS_COLLECTION, groupCode), group);
+    // Save group
+    groups[groupCode] = group;
+    await saveAllGroups(groups);
 
     return group;
   } catch (error) {
@@ -386,18 +390,15 @@ export const createGroup = async (
  */
 export const joinGroup = async (groupCode: string): Promise<boolean> => {
   try {
-    const userId = await getUserId();
     const groupCodeUpper = groupCode.toUpperCase().trim();
+    const groups = await getAllGroups();
 
     // Check if group exists
-    const docRef = doc(db, GROUPS_COLLECTION, groupCodeUpper);
-    const docSnap = await getDoc(docRef);
-
-    if (!docSnap.exists()) {
+    if (!groups[groupCodeUpper]) {
       return false;
     }
 
-    const group = docSnap.data() as Group;
+    const group = groups[groupCodeUpper];
     if (!group.isActive) {
       return false;
     }
@@ -406,9 +407,9 @@ export const joinGroup = async (groupCode: string): Promise<boolean> => {
     await updateUserProfile({ groupId: groupCodeUpper });
 
     // Increment member count
-    await updateDoc(docRef, {
-      memberCount: increment(1),
-    });
+    group.memberCount++;
+    groups[groupCodeUpper] = group;
+    await saveAllGroups(groups);
 
     return true;
   } catch (error) {
@@ -425,15 +426,18 @@ export const leaveGroup = async (): Promise<void> => {
     const profile = await getUserProfile();
     if (!profile || !profile.groupId) return;
 
-    const groupRef = doc(db, GROUPS_COLLECTION, profile.groupId);
+    const groups = await getAllGroups();
+    const group = groups[profile.groupId];
 
     // Update user's profile
     await updateUserProfile({ groupId: null });
 
     // Decrement member count
-    await updateDoc(groupRef, {
-      memberCount: increment(-1),
-    });
+    if (group) {
+      group.memberCount = Math.max(0, group.memberCount - 1);
+      groups[profile.groupId] = group;
+      await saveAllGroups(groups);
+    }
   } catch (error) {
     console.error('Error leaving group:', error);
     throw error;
@@ -445,13 +449,8 @@ export const leaveGroup = async (): Promise<void> => {
  */
 export const getGroup = async (groupCode: string): Promise<Group | null> => {
   try {
-    const docRef = doc(db, GROUPS_COLLECTION, groupCode.toUpperCase());
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      return docSnap.data() as Group;
-    }
-    return null;
+    const groups = await getAllGroups();
+    return groups[groupCode.toUpperCase()] || null;
   } catch (error) {
     console.error('Error getting group:', error);
     return null;
@@ -465,20 +464,24 @@ export const getGroup = async (groupCode: string): Promise<Group | null> => {
  */
 export const getGroupLeaderboard = async (groupCode: string): Promise<LeaderboardEntry[]> => {
   try {
-    const usersRef = collection(db, USERS_COLLECTION);
-    const q = query(
-      usersRef,
-      where('groupId', '==', groupCode.toUpperCase()),
-      orderBy('currentLevel', 'desc'),
-      orderBy('totalPuzzlesCompleted', 'desc'),
-      limit(50)
+    const allUsers = await getAllUsers();
+    const groupCodeUpper = groupCode.toUpperCase();
+    
+    // Filter users in this group
+    const groupUsers = Object.values(allUsers).filter(
+      user => user.groupId === groupCodeUpper
     );
 
-    const querySnapshot = await getDocs(q);
-    const leaderboard: LeaderboardEntry[] = [];
+    // Sort by level (desc), then by total puzzles (desc)
+    groupUsers.sort((a, b) => {
+      if (b.currentLevel !== a.currentLevel) {
+        return b.currentLevel - a.currentLevel;
+      }
+      return b.totalPuzzlesCompleted - a.totalPuzzlesCompleted;
+    });
 
-    querySnapshot.forEach((doc, index) => {
-      const user = doc.data() as UserProfile;
+    // Create leaderboard entries
+    const leaderboard: LeaderboardEntry[] = groupUsers.map((user, index) => {
       const totalPuzzlesInLevels = user.currentLevel * 5;
       const completedPuzzles = Object.values(user.levelCompletions).reduce(
         (sum, count) => sum + count,
@@ -489,7 +492,7 @@ export const getGroupLeaderboard = async (groupCode: string): Promise<Leaderboar
           ? Math.round((completedPuzzles / totalPuzzlesInLevels) * 100)
           : 0;
 
-      leaderboard.push({
+      return {
         userId: user.userId,
         displayName: user.displayName,
         currentLevel: user.currentLevel,
@@ -499,10 +502,10 @@ export const getGroupLeaderboard = async (groupCode: string): Promise<Leaderboar
         achievements: user.achievements,
         lastPlayedDate: user.lastPlayedDate,
         rank: index + 1,
-      });
+      };
     });
 
-    return leaderboard;
+    return leaderboard.slice(0, 50); // Limit to 50
   } catch (error) {
     console.error('Error getting leaderboard:', error);
     return [];

@@ -13,6 +13,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getLevelProgress, LevelProgress } from '../../utils/localStorage';
+import { getUserProfile, getGroup, leaveGroup } from '../../services/firebase-service';
 
 const { width } = Dimensions.get('window');
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
@@ -96,10 +97,58 @@ export default function LevelSelect() {
   const [progress, setProgress] = useState<LevelProgress | null>(null);
   const [loading, setLoading] = useState(true);
   const [levelPuzzles, setLevelPuzzles] = useState<{ [key: number]: Puzzle[] }>({});
+  const [checkingProfile, setCheckingProfile] = useState(true);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [userGroup, setUserGroup] = useState<any>(null);
+  const [showWelcomeBack, setShowWelcomeBack] = useState(false);
 
   useEffect(() => {
-    loadProgressAndPuzzles();
+    checkUserProfile();
   }, []);
+
+  const checkUserProfile = async () => {
+    try {
+      const profile = await getUserProfile();
+      if (!profile) {
+        // No profile, redirect to welcome
+        router.replace('/child/welcome');
+        return;
+      }
+      
+      setUserProfile(profile);
+      
+      // Check if user is in a group
+      if (profile.groupId) {
+        const group = await getGroup(profile.groupId);
+        if (group) {
+          setUserGroup(group);
+          setShowWelcomeBack(true);
+          setCheckingProfile(false);
+          return;
+        }
+      }
+      
+      setCheckingProfile(false);
+      loadProgressAndPuzzles();
+    } catch (error) {
+      console.error('Error checking profile:', error);
+      setCheckingProfile(false);
+      loadProgressAndPuzzles();
+    }
+  };
+
+  const handleContinueWithGroup = () => {
+    setShowWelcomeBack(false);
+    loadProgressAndPuzzles();
+  };
+
+  const handlePlayIndividually = async () => {
+    // Leave the group and play alone
+    await leaveGroup();
+    setUserGroup(null);
+    setShowWelcomeBack(false);
+    loadProgressAndPuzzles();
+  };
 
   const loadProgressAndPuzzles = async () => {
     try {
@@ -205,12 +254,41 @@ export default function LevelSelect() {
     return progress ? level <= progress.currentLevel : false;
   };
 
-  if (loading) {
+  if (checkingProfile || loading) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#4CAF50" />
-          <Text style={styles.loadingText}>Loading levels...</Text>
+          <Text style={styles.loadingText}>{checkingProfile ? 'Getting ready...' : 'Loading levels...'}</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Show welcome back screen if user is in a group
+  if (showWelcomeBack && userProfile && userGroup) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.welcomeBackContainer}>
+          <Text style={styles.welcomeBackEmoji}>👋</Text>
+          <Text style={styles.welcomeBackTitle}>Welcome back, {userProfile.displayName}!</Text>
+          
+          <View style={styles.groupInfoCard}>
+            <Ionicons name="people" size={40} color="#2196F3" />
+            <Text style={styles.groupInfoTitle}>You're in a group!</Text>
+            <Text style={styles.groupInfoName}>{userGroup.groupName}</Text>
+            <Text style={styles.groupInfoCode}>Code: {userGroup.groupId}</Text>
+          </View>
+          
+          <TouchableOpacity style={styles.continueGroupButton} onPress={handleContinueWithGroup}>
+            <Ionicons name="trophy" size={24} color="white" />
+            <Text style={styles.continueGroupText}>Continue with Group</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.playAloneButton} onPress={handlePlayIndividually}>
+            <Ionicons name="person" size={20} color="#666" />
+            <Text style={styles.playAloneText}>Play Individually (Leave Group)</Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
@@ -439,5 +517,83 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
     color: 'white',
+  },
+  // Welcome back styles
+  welcomeBackContainer: {
+    flex: 1,
+    padding: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  welcomeBackEmoji: {
+    fontSize: 60,
+    marginBottom: 10,
+  },
+  welcomeBackTitle: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  groupInfoCard: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 25,
+    alignItems: 'center',
+    marginBottom: 25,
+    width: '100%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  groupInfoTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#2196F3',
+    marginTop: 10,
+  },
+  groupInfoName: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#333',
+    marginTop: 5,
+  },
+  groupInfoCode: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 5,
+  },
+  continueGroupButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    backgroundColor: '#4CAF50',
+    borderRadius: 15,
+    padding: 16,
+    width: '100%',
+    marginBottom: 12,
+  },
+  continueGroupText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: 'white',
+  },
+  playAloneButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 12,
+    padding: 14,
+    width: '100%',
+  },
+  playAloneText: {
+    fontSize: 14,
+    color: '#666',
   },
 });

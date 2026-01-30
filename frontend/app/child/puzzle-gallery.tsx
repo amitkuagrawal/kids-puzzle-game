@@ -45,10 +45,33 @@ export default function PuzzleGallery() {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [selectedServerCategory, setSelectedServerCategory] = useState<CategoryData | null>(null);
+  const [solvedPuzzles, setSolvedPuzzles] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadAllPuzzles();
+    loadSolvedPuzzles();
   }, []);
+
+  const loadSolvedPuzzles = async () => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/scores/solved`);
+      const data = await response.json();
+      setSolvedPuzzles(new Set(data.solved_puzzles || []));
+    } catch (error) {
+      console.error('Error fetching solved puzzles:', error);
+    }
+  };
+
+  // Check if a category is fully completed (all puzzles solved)
+  const isCategoryComplete = (categoryData: CategoryData): boolean => {
+    if (categoryData.puzzles.length === 0) return false;
+    return categoryData.puzzles.every(puzzle => solvedPuzzles.has(puzzle.id));
+  };
+
+  // Count solved puzzles in a category
+  const getSolvedCount = (categoryData: CategoryData): number => {
+    return categoryData.puzzles.filter(puzzle => solvedPuzzles.has(puzzle.id)).length;
+  };
 
   const loadAllPuzzles = async () => {
     try {
@@ -192,6 +215,8 @@ export default function PuzzleGallery() {
     const previewImage = categoryData.puzzles.length > 0 
       ? getImageUri(categoryData.puzzles[0].image_base64) 
       : null;
+    const isComplete = isCategoryComplete(categoryData);
+    const solvedCount = getSolvedCount(categoryData);
     
     return (
       <TouchableOpacity
@@ -211,10 +236,16 @@ export default function PuzzleGallery() {
             <Text style={styles.categoryPlaceholderIcon}>{categoryData.icon}</Text>
           </View>
         )}
+        {/* Category complete badge */}
+        {isComplete && (
+          <View style={styles.categoryCompleteBadge}>
+            <Ionicons name="checkmark-circle" size={32} color="#4CAF50" />
+          </View>
+        )}
         <View style={[styles.categoryCardFooter, { backgroundColor: categoryData.color }]}>
           <Text style={styles.categoryCardIcon}>{categoryData.icon}</Text>
           <Text style={styles.categoryCardTitle}>{categoryData.category}</Text>
-          <Text style={styles.categoryCardCount}>{categoryData.puzzles.length}</Text>
+          <Text style={styles.categoryCardCount}>{solvedCount}/{categoryData.puzzles.length}</Text>
         </View>
       </TouchableOpacity>
     );
@@ -273,6 +304,8 @@ export default function PuzzleGallery() {
     if (!selectedServerCategory) return null;
     
     const isLocalCategory = selectedServerCategory.category === 'My Pictures';
+    const isComplete = isCategoryComplete(selectedServerCategory);
+    const solvedCount = getSolvedCount(selectedServerCategory);
     
     return (
       <Modal
@@ -289,29 +322,41 @@ export default function PuzzleGallery() {
             <View style={styles.modalHeaderTitle}>
               <Text style={styles.modalHeaderIcon}>{selectedServerCategory.icon}</Text>
               <Text style={styles.modalHeaderText}>{selectedServerCategory.category}</Text>
+              {isComplete && (
+                <Ionicons name="checkmark-circle" size={24} color="#4CAF50" style={{ marginLeft: 8 }} />
+              )}
             </View>
-            <View style={styles.placeholder} />
+            <Text style={styles.modalHeaderCount}>{solvedCount}/{selectedServerCategory.puzzles.length}</Text>
           </View>
           
           {/* Puzzles Grid */}
           <ScrollView style={styles.puzzlesScrollView} contentContainerStyle={styles.puzzlesGridContainer}>
-            {selectedServerCategory.puzzles.map((puzzle) => (
-              <TouchableOpacity
-                key={puzzle.id}
-                style={styles.puzzleGridCard}
-                onPress={() => {
-                  closeCategoryView();
-                  selectPuzzle(puzzle, isLocalCategory);
-                }}
-                activeOpacity={0.7}
-              >
-                <Image
-                  source={{ uri: getImageUri(puzzle.image_base64) }}
-                  style={styles.puzzleGridImage}
-                  resizeMode="cover"
-                />
-              </TouchableOpacity>
-            ))}
+            {selectedServerCategory.puzzles.map((puzzle) => {
+              const isSolved = solvedPuzzles.has(puzzle.id);
+              return (
+                <TouchableOpacity
+                  key={puzzle.id}
+                  style={styles.puzzleGridCard}
+                  onPress={() => {
+                    closeCategoryView();
+                    selectPuzzle(puzzle, isLocalCategory);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Image
+                    source={{ uri: getImageUri(puzzle.image_base64) }}
+                    style={styles.puzzleGridImage}
+                    resizeMode="cover"
+                  />
+                  {/* Solved checkmark badge */}
+                  {isSolved && (
+                    <View style={styles.puzzleSolvedBadge}>
+                      <Ionicons name="checkmark-circle" size={28} color="#4CAF50" />
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
           </ScrollView>
         </SafeAreaView>
       </Modal>
@@ -495,6 +540,20 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 10,
   },
+  categoryCompleteBadge: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
+    zIndex: 10,
+  },
   // Modal for viewing puzzles in a category
   modalContainer: {
     flex: 1,
@@ -520,6 +579,15 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: 'white',
   },
+  modalHeaderCount: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'white',
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
   puzzlesScrollView: {
     flex: 1,
   },
@@ -534,16 +602,31 @@ const styles = StyleSheet.create({
     height: CARD_SIZE,
     borderRadius: 15,
     marginBottom: 15,
-    overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 3,
     elevation: 3,
+    position: 'relative',
   },
   puzzleGridImage: {
     width: '100%',
     height: '100%',
+    borderRadius: 15,
+  },
+  puzzleSolvedBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
+    zIndex: 10,
   },
   // Empty state
   emptyContainer: {
