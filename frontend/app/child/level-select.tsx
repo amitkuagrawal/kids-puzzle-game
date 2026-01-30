@@ -158,17 +158,41 @@ export default function LevelSelect() {
       const levelProgress = await getLevelProgress();
       setProgress(levelProgress);
 
-      // Load puzzles for all levels
-      const response = await fetch(`${BACKEND_URL}/api/puzzles/preloaded`);
-      const categories = await response.json();
+      // Try to load puzzles from backend with timeout
+      let allPuzzles: Puzzle[] = [];
 
-      // Get all puzzles from all categories (excluding Uncategorized)
-      const allPuzzles: Puzzle[] = [];
-      categories.forEach((cat: any) => {
-        if (cat.category !== 'Uncategorized' && cat.puzzles) {
-          allPuzzles.push(...cat.puzzles);
+      try {
+        // Create fetch with timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+        const response = await fetch(`${BACKEND_URL}/api/puzzles/preloaded`, {
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+
+        const categories = await response.json();
+
+        // Get all puzzles from all categories (excluding Uncategorized)
+        categories.forEach((cat: any) => {
+          if (cat.category !== 'Uncategorized' && cat.puzzles) {
+            allPuzzles.push(...cat.puzzles);
+          }
+        });
+      } catch (fetchError) {
+        // If fetch fails or times out, create placeholder puzzles
+        console.log('Using placeholder puzzles (backend not available)');
+
+        // Create 25 placeholder puzzles (5 per level)
+        for (let i = 1; i <= 25; i++) {
+          allPuzzles.push({
+            id: `placeholder-${i}`,
+            name: `Puzzle ${i}`,
+            image_base64: '', // Empty - will be handled by puzzle selection screen
+            created_at: new Date().toISOString(),
+          });
         }
-      });
+      }
 
       // Distribute puzzles across 5 levels (5 puzzles per level)
       const puzzlesPerLevel: { [key: number]: Puzzle[] } = {
