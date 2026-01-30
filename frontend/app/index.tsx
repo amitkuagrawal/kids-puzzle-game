@@ -35,11 +35,11 @@ export default function Index() {
       const userProfile = await getUserProfile();
 
       if (!userProfile) {
-        // No profile exists, go to welcome screen
+        // No profile exists, go to welcome screen first
         router.push('/child/welcome');
       } else {
-        // Profile exists, go directly to level select
-        router.push('/child/level-select');
+        // Profile exists, go directly to play/join choice
+        router.push('/child/join-group');
       }
     } catch (error) {
       console.error('Error checking user profile:', error);
@@ -211,7 +211,7 @@ export default function Index() {
 
       {/* Title */}
       <View style={styles.titleContainer}>
-        <Ionicons name="extension-puzzle" size={80} color="#FD7979" />
+        <Ionicons name="extension-puzzle" size={60} color="#FD7979" />
         <Text style={styles.title}>Puzzle Fun!</Text>
         <Text style={styles.subtitle}>For Kids 5-8 Years</Text>
       </View>
@@ -226,16 +226,16 @@ export default function Index() {
         <Text style={styles.demoText}>📸 Upload Your Fav Picture!</Text>
         <View style={styles.puzzleContainer}>
           <Animated.View style={[styles.puzzlePiece, styles.piece1, piece1Style]}>
-            <Ionicons name="image" size={40} color="#4CAF50" />
+            <Ionicons name="image" size={32} color="#4CAF50" />
           </Animated.View>
           <Animated.View style={[styles.puzzlePiece, styles.piece2, piece2Style]}>
-            <Ionicons name="image" size={40} color="#2196F3" />
+            <Ionicons name="image" size={32} color="#2196F3" />
           </Animated.View>
           <Animated.View style={[styles.puzzlePiece, styles.piece3, piece3Style]}>
-            <Ionicons name="image" size={40} color="#FF9800" />
+            <Ionicons name="image" size={32} color="#FF9800" />
           </Animated.View>
           <Animated.View style={[styles.puzzlePiece, styles.piece4, piece4Style]}>
-            <Ionicons name="image" size={40} color="#9C27B0" />
+            <Ionicons name="image" size={32} color="#9C27B0" />
           </Animated.View>
         </View>
         <Text style={styles.demoText}>🧩 Solve the Puzzle!</Text>
@@ -250,7 +250,7 @@ export default function Index() {
           activeOpacity={0.8}
           disabled={isLoading}
         >
-          <Ionicons name="game-controller" size={50} color="white" />
+          <Ionicons name="game-controller" size={40} color="white" />
           <Text style={styles.buttonText}>
             {isLoading ? 'Loading...' : 'Play Puzzle!'}
           </Text>
@@ -261,16 +261,7 @@ export default function Index() {
           onPress={() => router.push('/parent/dashboard')}
           activeOpacity={0.8}
         >
-          <Ionicons name="people" size={40} color="white" />
-          <Text style={styles.buttonTextSmall}>Parent Dashboard</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.button, styles.parentButton]}
-          onPress={() => router.push('/parent/dashboard')}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="people" size={40} color="white" />
+          <Ionicons name="people" size={32} color="white" />
           <Text style={styles.buttonTextSmall}>Parent Dashboard</Text>
         </TouchableOpacity>
       </View>
@@ -284,65 +275,66 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFCDC9',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
   },
   titleContainer: {
     alignItems: 'center',
-    marginBottom: 60,
+    marginBottom: 30,
   },
   title: {
-    fontSize: 52,
+    fontSize: 42,
     fontWeight: 'bold',
     color: '#FD7979',
-    marginTop: 20,
+    marginTop: 10,
     textShadowColor: 'rgba(0, 0, 0, 0.1)',
     textShadowOffset: { width: 2, height: 2 },
     textShadowRadius: 5,
   },
   subtitle: {
-    fontSize: 20,
+    fontSize: 18,
     color: '#FD7979',
-    marginTop: 10,
+    marginTop: 5,
     fontWeight: '600',
   },
   puzzleDemo: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 30,
     paddingHorizontal: 20,
   },
   demoText: {
-    fontSize: 18,
+    fontSize: 16,
     color: '#FD7979',
     fontWeight: 'bold',
-    marginVertical: 10,
+    marginVertical: 6,
   },
   tapHint: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#FD7979',
     fontWeight: '600',
-    marginTop: 5,
+    marginTop: 3,
     opacity: 0.8,
   },
   puzzleContainer: {
-    width: 140,
-    height: 140,
+    width: 120,
+    height: 120,
     position: 'relative',
     justifyContent: 'center',
     alignItems: 'center',
   },
   puzzlePiece: {
     position: 'absolute',
-    width: 60,
-    height: 60,
+    width: 50,
+    height: 50,
     backgroundColor: '#FEEAC9',
-    borderRadius: 10,
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 8,
+    shadowRadius: 4,
+    elevation: 6,
   },
   piece1: {
     top: 10,
@@ -363,12 +355,12 @@ const styles = StyleSheet.create({
   buttonContainer: {
     width: '100%',
     alignItems: 'center',
-    gap: 20,
+    gap: 12,
   },
   button: {
     width: width * 0.8,
-    height: 130,
-    borderRadius: 25,
+    height: 100,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
@@ -382,20 +374,20 @@ const styles = StyleSheet.create({
   },
   parentButton: {
     backgroundColor: '#6A1B9A',
-    height: 100,
+    height: 80,
   },
   adminButton: {
     backgroundColor: '#FDACAC',
-    height: 100,
+    height: 80,
   },
   buttonText: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: 'bold',
     color: 'white',
-    marginTop: 10,
+    marginTop: 8,
   },
   buttonTextSmall: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: 'white',
     marginTop: 5,
