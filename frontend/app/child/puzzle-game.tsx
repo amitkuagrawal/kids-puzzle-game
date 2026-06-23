@@ -19,6 +19,10 @@ import { Analytics } from '../../utils/analytics';
 import { markPuzzleCompleted } from '../../utils/localStorage';
 import { recordPuzzleCompletion, updateStreak } from '../../services/firebase-service';
 import { Colors, Fonts, FontSizes, Radii, Spacing, Shadows } from '../../constants/theme';
+import { LinearGradient } from 'expo-linear-gradient';
+import Pip from '../../components/Pip';
+import Stars from '../../components/Stars';
+import Confetti from '../../components/Confetti';
 
 const { width, height } = Dimensions.get('window');
 const PUZZLE_SIZE = width - 40;
@@ -45,8 +49,8 @@ export default function PuzzleGame() {
   const { puzzleId, puzzleName, imageBase64, difficulty, pieces, level, puzzleIndex, totalPuzzles } = params;
 
   const numPieces = parseInt(pieces as string);
-  const cols = difficulty === 'baby_easy' ? 2 : difficulty === 'easy' ? 3 : difficulty === 'medium' ? 3 : difficulty === 'expert' ? 4 : 4;
-  const rows = difficulty === 'baby_easy' ? 2 : difficulty === 'easy' ? 3 : difficulty === 'medium' ? 4 : difficulty === 'expert' ? 5 : 4;
+  const cols = difficulty === 'baby_easy' ? 2 : difficulty === 'easy' ? 3 : difficulty === 'medium' ? 3 : 4;
+  const rows = difficulty === 'baby_easy' ? 2 : difficulty === 'easy' ? 3 : difficulty === 'medium' ? 4 : 4;
 
   const [puzzlePieces, setPuzzlePieces] = useState<PuzzlePiece[]>([]);
   const [selectedPiece, setSelectedPiece] = useState<number | null>(null);
@@ -57,6 +61,7 @@ export default function PuzzleGame() {
   const [topScores, setTopScores] = useState<ScoreEntry[]>([]);
   const [showScoreboard, setShowScoreboard] = useState(false);
   const [levelUnlocked, setLevelUnlocked] = useState(false);
+  const [hasLearn, setHasLearn] = useState(false);
   const [newAchievements, setNewAchievements] = useState<string[]>([]);
   const timerRef = useRef<any>(null);
   const confettiAnim = useRef(new Animated.Value(0)).current;
@@ -64,18 +69,29 @@ export default function PuzzleGame() {
   useEffect(() => {
     initializePuzzle();
     startTimer();
-
-    // Track puzzle started
     Analytics.puzzleStarted(puzzleId as string, difficulty as string, numPieces);
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
-      // Track abandonment if puzzle wasn't completed
       if (!isComplete && timer > 0) {
         Analytics.puzzleAbandoned(puzzleId as string, difficulty as string, timer);
       }
     };
   }, []);
+
+  useEffect(() => {
+    const id = puzzleId as string;
+    if (!id || id.startsWith('local_')) return;
+    (async () => {
+      try {
+        const r = await fetch(`${BACKEND_URL}/api/items/${id}`);
+        if (r.ok) {
+          const data = await r.json();
+          setHasLearn(!!data.learn);
+        }
+      } catch {}
+    })();
+  }, [puzzleId]);
 
   const startTimer = () => {
     timerRef.current = setInterval(() => {
@@ -85,24 +101,15 @@ export default function PuzzleGame() {
 
   const initializePuzzle = () => {
     const pieces: PuzzlePiece[] = [];
-
     for (let i = 0; i < numPieces; i++) {
-      pieces.push({
-        id: i,
-        correctPosition: i,
-        currentPosition: i,
-        imageUri: imageBase64 as string,
-      });
+      pieces.push({ id: i, correctPosition: i, currentPosition: i, imageUri: imageBase64 as string });
     }
-
-    // Shuffle pieces
     const shuffled = [...pieces];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [shuffled[i].currentPosition, shuffled[j].currentPosition] =
         [shuffled[j].currentPosition, shuffled[i].currentPosition];
     }
-
     setPuzzlePieces(shuffled);
   };
 
@@ -111,60 +118,35 @@ export default function PuzzleGame() {
     const temp = newPieces[index1].currentPosition;
     newPieces[index1].currentPosition = newPieces[index2].currentPosition;
     newPieces[index2].currentPosition = temp;
-
     setPuzzlePieces(newPieces);
     setMoves(prev => prev + 1);
-
-    // Check if puzzle is complete
     checkCompletion(newPieces);
   };
 
   const checkCompletion = async (pieces: PuzzlePiece[]) => {
-    const isComplete = pieces.every(piece => piece.correctPosition === piece.currentPosition);
-
-    if (isComplete) {
+    const complete = pieces.every(piece => piece.correctPosition === piece.currentPosition);
+    if (complete) {
       setIsComplete(true);
       if (timerRef.current) clearInterval(timerRef.current);
-
-      // Calculate score
       const finalScore = calculateScore();
 
-      // Track puzzle completion analytics (non-blocking)
-      Analytics.puzzleCompleted(
-        puzzleId as string,
-        difficulty as string,
-        timer,
-        moves,
-        finalScore
-      );
-
-      // Save score in background (don't wait)
+      Analytics.puzzleCompleted(puzzleId as string, difficulty as string, timer, moves, finalScore);
       saveScore(finalScore).catch(() => {});
 
-      // Track level progress if level parameter is present
       if (level) {
         try {
-          // Update local storage
           const unlocked = await markPuzzleCompleted(parseInt(level as string));
           setLevelUnlocked(unlocked);
-
-          // Update Firebase (non-blocking, catches errors internally)
           recordPuzzleCompletion(parseInt(level as string))
             .then((result) => {
-              if (result.levelUnlocked) {
-                setLevelUnlocked(true);
-              }
-              if (result.newAchievements.length > 0) {
-                setNewAchievements(result.newAchievements);
-              }
+              if (result.levelUnlocked) setLevelUnlocked(true);
+              if (result.newAchievements.length > 0) setNewAchievements(result.newAchievements);
             })
             .catch(() => {});
-        } catch {
-          // level progress tracking failed silently
-        }
+          updateStreak().catch(() => {});
+        } catch {}
       }
 
-      // Show celebration immediately
       playCelebration();
     }
   };
@@ -178,20 +160,10 @@ export default function PuzzleGame() {
     try {
       await fetch(`${BACKEND_URL}/api/scores`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          puzzle_id: puzzleId,
-          difficulty: difficulty,
-          time_seconds: timer,
-          moves: moves,
-          score: score,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ puzzle_id: puzzleId, difficulty, time_seconds: timer, moves, score }),
       });
-    } catch {
-      // backend may not be running
-    }
+    } catch {}
   };
 
   const fetchTopScores = async () => {
@@ -199,17 +171,11 @@ export default function PuzzleGame() {
       const response = await fetch(`${BACKEND_URL}/api/scores/${puzzleId}/${difficulty}`);
       const data = await response.json();
       setTopScores(data);
-    } catch {
-      // backend may not be running
-    }
+    } catch {}
   };
 
   const playCelebration = () => {
-    Animated.timing(confettiAnim, {
-      toValue: 1,
-      duration: 500,
-      useNativeDriver: true,
-    }).start();
+    Animated.timing(confettiAnim, { toValue: 1, duration: 500, useNativeDriver: true }).start();
   };
 
   const formatTime = (seconds: number) => {
@@ -218,9 +184,7 @@ export default function PuzzleGame() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const getPieceAtPosition = (position: number) => {
-    return puzzlePieces.find(p => p.currentPosition === position);
-  };
+  const getPieceAtPosition = (position: number) => puzzlePieces.find(p => p.currentPosition === position);
 
   const calculateScore = () => {
     const baseScore = 1000;
@@ -231,13 +195,10 @@ export default function PuzzleGame() {
 
   const handlePiecePress = (position: number) => {
     if (selectedPiece === null) {
-      // First piece selected
       setSelectedPiece(position);
     } else if (selectedPiece === position) {
-      // Deselect if same piece clicked
       setSelectedPiece(null);
     } else {
-      // Swap with selected piece
       const index1 = puzzlePieces.findIndex(p => p.currentPosition === selectedPiece);
       const index2 = puzzlePieces.findIndex(p => p.currentPosition === position);
       swapPieces(index1, index2);
@@ -254,17 +215,13 @@ export default function PuzzleGame() {
     const row = Math.floor(piece.correctPosition / cols);
     const col = piece.correctPosition % cols;
     const isSelected = selectedPiece === position;
-    const isCorrect = piece.correctPosition === piece.currentPosition;
 
     return (
       <TouchableOpacity
         key={position}
         style={[
           styles.puzzlePiece,
-          {
-            width: pieceWidth - 4,
-            height: pieceHeight - 4,
-          },
+          { width: pieceWidth - 4, height: pieceHeight - 4 },
           isSelected && styles.selectedPiece,
         ]}
         onPress={() => handlePiecePress(position)}
@@ -275,12 +232,8 @@ export default function PuzzleGame() {
           style={[
             styles.pieceImage,
             {
-              width: PUZZLE_SIZE,
-              height: PUZZLE_SIZE,
-              transform: [
-                { translateX: -col * pieceWidth },
-                { translateY: -row * pieceHeight },
-              ],
+              width: PUZZLE_SIZE, height: PUZZLE_SIZE,
+              transform: [{ translateX: -col * pieceWidth }, { translateY: -row * pieceHeight }],
             },
           ]}
           resizeMode="cover"
@@ -288,7 +241,7 @@ export default function PuzzleGame() {
         <View style={[styles.pieceBorder, isSelected && styles.selectedBorder]} />
         {isSelected && (
           <View style={styles.selectionIndicator}>
-            <Ionicons name="hand-left" size={30} color={Colors.starOn} />
+            <Ionicons name="hand-left" size={30} color={Colors.gold500} />
           </View>
         )}
       </TouchableOpacity>
@@ -300,60 +253,40 @@ export default function PuzzleGame() {
       {/* Header with stats */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={28} color={Colors.onCoral} />
+          <Ionicons name="arrow-back" size={28} color="white" />
         </TouchableOpacity>
-
         <View style={styles.stats}>
           <View style={styles.statItem}>
-            <Ionicons name="time" size={24} color={Colors.onCoral} />
+            <Ionicons name="time" size={24} color="white" />
             <Text style={styles.statText}>{formatTime(timer)}</Text>
           </View>
-
           <View style={styles.statItem}>
-            <Ionicons name="swap-horizontal" size={24} color={Colors.onCoral} />
+            <Ionicons name="swap-horizontal" size={24} color="white" />
             <Text style={styles.statText}>{moves}</Text>
           </View>
         </View>
-
-        <TouchableOpacity
-          onPress={() => setShowPreview(!showPreview)}
-          style={styles.hintButton}
-        >
-          <Ionicons name={showPreview ? "eye-off" : "eye"} size={28} color={Colors.onCoral} />
+        <TouchableOpacity onPress={() => setShowPreview(!showPreview)} style={styles.hintButton}>
+          <Ionicons name={showPreview ? "eye-off" : "eye"} size={28} color="white" />
         </TouchableOpacity>
       </View>
 
       {/* Preview Image */}
       {showPreview && (
         <View style={styles.previewContainer}>
-          <Image
-            source={{ uri: imageBase64 as string }}
-            style={styles.previewImage}
-            resizeMode="contain"
-          />
+          <Image source={{ uri: imageBase64 as string }} style={styles.previewImage} resizeMode="contain" />
         </View>
       )}
 
       {/* Instructions */}
       <View style={styles.instructionContainer}>
         <Text style={styles.instructionText}>
-          {selectedPiece === null
-            ? "👆 Tap a piece to select it"
-            : "👉 Tap another piece to swap!"}
+          {selectedPiece === null ? "👆 Tap a piece to select it" : "👉 Tap another piece to swap!"}
         </Text>
       </View>
 
       {/* Puzzle Board */}
-      <View style={styles.puzzleContainer}>
-        <View
-          style={[
-            styles.puzzleBoard,
-            {
-              width: PUZZLE_SIZE,
-              height: PUZZLE_SIZE,
-            },
-          ]}
-        >
+      <View style={styles.puzzleArea}>
+        <View style={[styles.puzzleBoard, { width: PUZZLE_SIZE, height: PUZZLE_SIZE }]}>
           <View style={styles.piecesGrid}>
             {Array.from({ length: numPieces }).map((_, index) => (
               <View key={index}>{renderPuzzlePiece(index)}</View>
@@ -362,60 +295,36 @@ export default function PuzzleGame() {
         </View>
       </View>
 
-      {/* Completion Modal */}
+      {/* Win screen */}
       {isComplete && (
-        <Animated.View
-          style={[
-            styles.completionOverlay,
-            {
+        <LinearGradient colors={['#FFD86F', '#FF8AB8']} style={styles.completionOverlay}>
+          <Confetti active={isComplete} />
+          <ScrollView contentContainerStyle={styles.completionScrollContent} showsVerticalScrollIndicator={false}>
+            <Animated.View style={[styles.completionCard, {
               opacity: confettiAnim,
-              transform: [
-                {
-                  scale: confettiAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [0.5, 1],
-                  }),
-                },
-              ],
-            },
-          ]}
-        >
-          <ScrollView
-            contentContainerStyle={styles.completionScrollContent}
-            showsVerticalScrollIndicator={false}
-          >
-            <View style={styles.completionCard}>
-              {/* Show the complete assembled image */}
-              <View style={styles.completedImageContainer}>
-                <Image
-                  source={{ uri: imageBase64 as string }}
-                  style={styles.completedImage}
-                  resizeMode="contain"
-                />
-                <View style={styles.completedImageBadge}>
-                  <Ionicons name="checkmark-circle" size={30} color={Colors.green500} />
-                </View>
-              </View>
+              transform: [{ scale: confettiAnim.interpolate({ inputRange: [0, 1], outputRange: [0.5, 1] }) }],
+            }]}>
+              <Pip size={120} mood="party" hat="party" />
+              <Text style={styles.congratsText}>WOW!</Text>
+              <Text style={styles.completionMessage}>You did it! 🎉</Text>
 
-              <Ionicons name="trophy" size={40} color={Colors.starOn} />
-              <Text style={styles.congratsText}>Amazing!</Text>
-              <Text style={styles.completionMessage}>You completed the puzzle!</Text>
+              <View style={{ marginTop: 10 }}>
+                <Stars count={moves <= 10 ? 3 : moves <= 20 ? 2 : 1} size={38} />
+              </View>
 
               {/* Level unlock notification */}
               {levelUnlocked && (
                 <View style={styles.levelUnlockBanner}>
-                  <Ionicons name="lock-open" size={30} color={Colors.green500} />
+                  <Ionicons name="lock-open" size={24} color={Colors.gold500} />
                   <Text style={styles.levelUnlockText}>New Level Unlocked! 🎉</Text>
                 </View>
               )}
 
               {/* Puzzle progress in level */}
               {level && puzzleIndex && totalPuzzles && (
-                <View style={styles.progressBanner}>
-                  <Text style={styles.progressText}>
-                    Puzzle {puzzleIndex} of {totalPuzzles} completed
-                  </Text>
-                </View>
+                <Text style={styles.progressText}>
+                  Puzzle {puzzleIndex} of {totalPuzzles} completed
+                </Text>
               )}
 
               {/* New Achievements */}
@@ -432,94 +341,82 @@ export default function PuzzleGame() {
                 </View>
               )}
 
+              {/* Score row */}
               <View style={styles.scoreContainer}>
                 <View style={styles.scoreItem}>
-                  <Ionicons name="time" size={24} color={Colors.green500} />
+                  <Ionicons name="time" size={22} color={Colors.green500} />
                   <Text style={styles.scoreLabel}>Time</Text>
                   <Text style={styles.scoreValue}>{formatTime(timer)}</Text>
                 </View>
-
                 <View style={styles.scoreItem}>
-                  <Ionicons name="swap-horizontal" size={24} color={Colors.blue500} />
+                  <Ionicons name="swap-horizontal" size={22} color={Colors.blue500} />
                   <Text style={styles.scoreLabel}>Moves</Text>
                   <Text style={styles.scoreValue}>{moves}</Text>
                 </View>
-
                 <View style={styles.scoreItem}>
-                  <Ionicons name="star" size={24} color={Colors.starOn} />
+                  <Ionicons name="star" size={22} color={Colors.gold500} />
                   <Text style={styles.scoreLabel}>Score</Text>
                   <Text style={styles.scoreValue}>{calculateScore()}</Text>
                 </View>
               </View>
 
+              {/* Buttons */}
               <View style={styles.completionButtons}>
-                <TouchableOpacity
-                  style={[styles.button, styles.scoreboardButton]}
-                  onPress={handleViewScoreboard}
-                >
-                  <Ionicons name="trophy" size={22} color={Colors.onCoral} />
+                {hasLearn && (
+                  <TouchableOpacity
+                    style={[styles.button, styles.learnButton]}
+                    onPress={() => router.push({
+                      pathname: '/child/learn',
+                      params: { puzzleId, puzzleName, imageBase64 },
+                    })}
+                  >
+                    <Ionicons name="book" size={22} color="#fff" />
+                    <Text style={styles.buttonText}>Learn about {puzzleName} 📖</Text>
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity style={[styles.button, styles.scoreboardButton]} onPress={handleViewScoreboard}>
+                  <Ionicons name="trophy" size={22} color="#fff" />
                   <Text style={styles.buttonText}>View Scores</Text>
                 </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.button, styles.playAgainButton]}
-                  onPress={() => {
-                    setIsComplete(false);
-                    setTimer(0);
-                    setMoves(0);
-                    setLevelUnlocked(false);
-                    initializePuzzle();
-                    startTimer();
-                    confettiAnim.setValue(0);
-                  }}
-                >
-                  <Ionicons name="refresh" size={22} color={Colors.onCoral} />
+                <TouchableOpacity style={[styles.button, styles.playAgainButton]} onPress={() => {
+                  setIsComplete(false); setTimer(0); setMoves(0); setLevelUnlocked(false);
+                  initializePuzzle(); startTimer(); confettiAnim.setValue(0);
+                }}>
+                  <Ionicons name="refresh" size={22} color="#fff" />
                   <Text style={styles.buttonText}>Play Again</Text>
                 </TouchableOpacity>
-
                 {level && (
-                  <TouchableOpacity
-                    style={[styles.button, styles.levelsButton]}
-                    onPress={() => router.push('/child/level-select')}
-                  >
-                    <Ionicons name="layers" size={22} color={Colors.onCoral} />
+                  <TouchableOpacity style={[styles.button, styles.levelsButton]} onPress={() => router.push('/child/level-select')}>
+                    <Ionicons name="layers" size={22} color="#fff" />
                     <Text style={styles.buttonText}>Back to Levels</Text>
                   </TouchableOpacity>
                 )}
-
-                <TouchableOpacity
-                  style={[styles.button, styles.homeButton]}
-                  onPress={() => router.push('/')}
-                >
-                  <Ionicons name="home" size={22} color={Colors.onCoral} />
+                <TouchableOpacity style={[styles.button, styles.newPuzzleButton]} onPress={() => router.push('/child/puzzle-gallery')}>
+                  <Ionicons name="grid" size={22} color="#fff" />
+                  <Text style={styles.buttonText}>New Puzzle</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.button, styles.homeButton]} onPress={() => router.push('/')}>
+                  <Ionicons name="home" size={22} color="#fff" />
                   <Text style={styles.buttonText}>Home</Text>
                 </TouchableOpacity>
               </View>
-            </View>
+            </Animated.View>
           </ScrollView>
-        </Animated.View>
+        </LinearGradient>
       )}
 
       {/* Scoreboard Modal */}
-      <Modal
-        visible={showScoreboard}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setShowScoreboard(false)}
-      >
+      <Modal visible={showScoreboard} transparent animationType="fade" onRequestClose={() => setShowScoreboard(false)}>
         <TouchableWithoutFeedback onPress={() => setShowScoreboard(false)}>
           <View style={styles.modalOverlay}>
             <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
               <View style={styles.modalContent}>
                 <View style={styles.modalHeader}>
                   <Text style={styles.modalTitle}>🏆 Top 10 Scores</Text>
-                  <TouchableOpacity
-                    onPress={() => setShowScoreboard(false)}
-                    style={styles.closeButton}
-                  >
+                  <TouchableOpacity onPress={() => setShowScoreboard(false)} style={styles.closeButton}>
                     <Ionicons name="close-circle" size={32} color={Colors.ink2} />
                   </TouchableOpacity>
                 </View>
-
                 <ScrollView style={styles.modalScoreboardList}>
                   {topScores.map((entry, index) => (
                     <View key={entry.id} style={styles.modalScoreboardEntry}>
@@ -543,338 +440,94 @@ export default function PuzzleGame() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.cream200,
-  },
+  container: { flex: 1, backgroundColor: Colors.cream200 },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: Colors.purple500,
-    paddingVertical: Spacing.s4,
-    paddingHorizontal: Spacing.s5,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    backgroundColor: Colors.purple500, paddingVertical: Spacing.s4, paddingHorizontal: Spacing.s5,
     ...Shadows.s1,
   },
-  backButton: {
-    padding: Spacing.s1,
-  },
-  stats: {
-    flexDirection: 'row',
-    gap: Spacing.s5,
-  },
-  statItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.s1,
-  },
-  statText: {
-    color: Colors.onCoral,
-    fontSize: FontSizes.label,
-    fontFamily: Fonts.bodyBold,
-  },
-  hintButton: {
-    padding: Spacing.s1,
-  },
+  backButton: { padding: 5 },
+  stats: { flexDirection: 'row', gap: Spacing.s5 },
+  statItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  statText: { color: Colors.onCoral, fontSize: FontSizes.label, fontFamily: Fonts.bodyBold },
+  hintButton: { padding: 5 },
+
   previewContainer: {
-    alignItems: 'center',
-    padding: Spacing.s3,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    marginHorizontal: Spacing.s5,
-    marginTop: Spacing.s3,
-    borderRadius: Radii.card,
+    alignItems: 'center', padding: Spacing.s3, backgroundColor: 'rgba(255,255,255,0.9)',
+    marginHorizontal: Spacing.s5, marginTop: Spacing.s3, borderRadius: Radii.card,
   },
-  previewImage: {
-    width: 150,
-    height: 150,
-    borderRadius: Radii.chip,
-  },
+  previewImage: { width: 150, height: 150, borderRadius: Radii.chip },
+
   instructionContainer: {
-    backgroundColor: Colors.starOn,
-    paddingVertical: Spacing.s4,
-    paddingHorizontal: Spacing.s5,
-    marginHorizontal: Spacing.s5,
-    marginTop: Spacing.s3,
-    borderRadius: Radii.card,
-    alignItems: 'center',
+    backgroundColor: Colors.gold500, paddingVertical: Spacing.s4, paddingHorizontal: Spacing.s5,
+    marginHorizontal: Spacing.s5, marginTop: Spacing.s3, borderRadius: Radii.card, alignItems: 'center',
   },
-  instructionText: {
-    fontSize: FontSizes.label,
-    fontFamily: Fonts.bodyBold,
-    color: Colors.ink,
-    textAlign: 'center',
-  },
-  puzzleContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: Spacing.s5,
-  },
-  puzzleBoard: {
-    backgroundColor: Colors.paper,
-    borderRadius: Radii.tile,
-    ...Shadows.s3,
-    overflow: 'hidden',
-  },
-  piecesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  puzzlePiece: {
-    margin: 2,
-    backgroundColor: Colors.slate,
-    borderRadius: Radii.piece,
-    overflow: 'hidden',
-  },
-  pieceImage: {
-    position: 'absolute',
-  },
-  pieceBorder: {
-    ...StyleSheet.absoluteFillObject,
-    borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.1)',
-    borderRadius: Radii.piece,
-  },
-  selectedPiece: {
-    backgroundColor: Colors.starOn,
-    transform: [{ scale: 1.05 }],
-  },
-  selectedBorder: {
-    borderWidth: 4,
-    borderColor: Colors.starOn,
-  },
-  selectionIndicator: {
-    position: 'absolute',
-    top: Spacing.s1,
-    right: Spacing.s1,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    borderRadius: Radii.tile,
-    padding: Spacing.s1,
-  },
-  completionOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.85)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  completionScrollContent: {
-    flexGrow: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: Spacing.s4,
-    paddingVertical: 30,
-  },
+  instructionText: { fontSize: FontSizes.label, fontFamily: Fonts.bodyBold, color: Colors.ink, textAlign: 'center' },
+
+  puzzleArea: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: Spacing.s5 },
+  puzzleBoard: { backgroundColor: Colors.paper, borderRadius: Radii.tile, ...Shadows.s3, overflow: 'hidden' },
+  piecesGrid: { flexDirection: 'row', flexWrap: 'wrap' },
+  puzzlePiece: { margin: 2, backgroundColor: Colors.slate, borderRadius: Radii.piece, overflow: 'hidden' },
+  pieceImage: { position: 'absolute' },
+  pieceBorder: { ...StyleSheet.absoluteFillObject, borderWidth: 1, borderColor: 'rgba(0,0,0,0.1)', borderRadius: Radii.piece },
+  selectedPiece: { backgroundColor: Colors.gold500, transform: [{ scale: 1.05 }] },
+  selectedBorder: { borderWidth: 4, borderColor: Colors.gold500 },
+  selectionIndicator: { position: 'absolute', top: 5, right: 5, backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 20, padding: 5 },
+
+  completionOverlay: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },
+  completionScrollContent: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', padding: Spacing.s4, paddingVertical: 30 },
   completionCard: {
-    backgroundColor: Colors.paper,
-    borderRadius: Radii.hero,
-    padding: Spacing.s5,
-    alignItems: 'center',
-    width: '95%',
-    maxWidth: 350,
-  },
-  completedImageContainer: {
-    position: 'relative',
-    marginBottom: Spacing.s3,
-    borderRadius: Radii.card,
-    overflow: 'hidden',
-    ...Shadows.s2,
-  },
-  completedImage: {
-    width: 150,
-    height: 150,
-    borderRadius: Radii.input,
-  },
-  completedImageBadge: {
-    position: 'absolute',
-    bottom: -5,
-    right: -5,
-    backgroundColor: Colors.paper,
-    borderRadius: Radii.tile,
-    padding: 3,
+    backgroundColor: Colors.paper, borderRadius: Radii.hero, padding: Spacing.s5, alignItems: 'center',
+    width: '95%', maxWidth: 350,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.15, shadowRadius: 10, elevation: 10,
   },
   congratsText: {
-    fontSize: FontSizes.h1,
-    fontFamily: Fonts.display,
-    color: Colors.coral600,
-    marginTop: Spacing.s2,
+    fontSize: 44, fontFamily: Fonts.display, color: Colors.coral600,
+    textShadowColor: 'rgba(0,0,0,0.25)', textShadowOffset: { width: 0, height: 3 }, textShadowRadius: 0, marginTop: 4,
   },
-  completionMessage: {
-    fontSize: FontSizes.body,
-    fontFamily: Fonts.body,
-    color: Colors.ink2,
-    marginTop: Spacing.s1,
-  },
+  completionMessage: { fontSize: FontSizes.body, fontFamily: Fonts.heading, color: Colors.ink2, marginTop: Spacing.s1 },
+
   levelUnlockBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.green50,
-    paddingHorizontal: Spacing.s5,
-    paddingVertical: Spacing.s3,
-    borderRadius: Radii.input,
-    marginTop: Spacing.s4,
-    gap: Spacing.s3,
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: '#FFF8E1', paddingVertical: 10, paddingHorizontal: 16,
+    borderRadius: Radii.card, marginTop: Spacing.s3,
   },
-  levelUnlockText: {
-    fontSize: FontSizes.caption,
-    fontFamily: Fonts.bodyBold,
-    color: Colors.green500,
-  },
-  progressBanner: {
-    backgroundColor: '#E3F2FD',
-    paddingHorizontal: Spacing.s4,
-    paddingVertical: Spacing.s2,
-    borderRadius: Radii.input,
-    marginTop: Spacing.s3,
-  },
-  progressText: {
-    fontSize: FontSizes.small,
-    fontFamily: Fonts.body,
-    color: Colors.blue500,
-    textAlign: 'center',
-  },
-  achievementsBanner: {
-    backgroundColor: '#FFF3E0',
-    paddingHorizontal: Spacing.s4,
-    paddingVertical: Spacing.s3,
-    borderRadius: Radii.input,
-    marginTop: Spacing.s3,
-    alignItems: 'center',
-  },
-  achievementsTitle: {
-    fontSize: FontSizes.caption,
-    fontFamily: Fonts.bodyBold,
-    color: '#F57C00',
-    marginBottom: Spacing.s2,
-  },
-  achievementsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.s2,
-    justifyContent: 'center',
-  },
-  achievementBadge: {
-    backgroundColor: Colors.orange500,
-    paddingHorizontal: Spacing.s3,
-    paddingVertical: 6,
-    borderRadius: Radii.card,
-  },
-  achievementText: {
-    fontSize: 12,
-    fontFamily: Fonts.bodyBold,
-    color: Colors.onCoral,
-    textTransform: 'capitalize',
-  },
-  scoreContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
-    marginTop: Spacing.s4,
-    marginBottom: Spacing.s4,
-  },
-  scoreItem: {
-    alignItems: 'center',
-    gap: 3,
-  },
-  scoreLabel: {
-    fontSize: FontSizes.small,
-    fontFamily: Fonts.body,
-    color: Colors.ink2,
-  },
-  scoreValue: {
-    fontSize: FontSizes.label,
-    fontFamily: Fonts.bodyBold,
-    color: Colors.ink,
-  },
-  completionButtons: {
-    width: '100%',
-    gap: Spacing.s3,
-  },
-  button: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: Spacing.s3,
-    borderRadius: Radii.card,
-    gap: Spacing.s2,
-  },
-  scoreboardButton: {
-    backgroundColor: Colors.starOn,
-  },
-  playAgainButton: {
-    backgroundColor: Colors.green500,
-  },
-  newPuzzleButton: {
-    backgroundColor: Colors.orange500,
-  },
-  levelsButton: {
-    backgroundColor: Colors.purple500,
-  },
-  homeButton: {
-    backgroundColor: Colors.blue500,
-  },
-  buttonText: {
-    color: Colors.onCoral,
-    fontSize: FontSizes.caption,
-    fontFamily: Fonts.bodyBold,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: Spacing.s5,
-  },
-  modalContent: {
-    backgroundColor: Colors.paper,
-    borderRadius: Radii.hero,
-    padding: Spacing.s5,
-    width: '100%',
-    maxWidth: 400,
-    maxHeight: '80%',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing.s5,
-  },
-  modalTitle: {
-    fontSize: FontSizes.h3,
-    fontFamily: Fonts.heading,
-    color: Colors.ink,
-  },
-  closeButton: {
-    padding: Spacing.s1,
-  },
-  modalScoreboardList: {
-    maxHeight: 400,
-  },
+  levelUnlockText: { fontFamily: Fonts.bodyBold, fontSize: FontSizes.caption, color: Colors.ink },
+  progressText: { fontFamily: Fonts.body, fontSize: FontSizes.small, color: Colors.ink2, marginTop: Spacing.s2 },
+
+  achievementsBanner: { marginTop: Spacing.s3, alignItems: 'center' },
+  achievementsTitle: { fontFamily: Fonts.bodyBold, fontSize: FontSizes.caption, color: Colors.ink },
+  achievementsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 6, justifyContent: 'center' },
+  achievementBadge: { backgroundColor: Colors.gold500, paddingVertical: 4, paddingHorizontal: 10, borderRadius: Radii.chip },
+  achievementText: { fontFamily: Fonts.body, fontSize: FontSizes.small, color: Colors.paper, textTransform: 'capitalize' },
+
+  scoreContainer: { flexDirection: 'row', justifyContent: 'space-around', width: '100%', marginTop: Spacing.s4, marginBottom: Spacing.s4 },
+  scoreItem: { alignItems: 'center', gap: 3 },
+  scoreLabel: { fontSize: FontSizes.small, fontFamily: Fonts.body, color: Colors.ink2 },
+  scoreValue: { fontSize: FontSizes.label, fontFamily: Fonts.bodyBold, color: Colors.ink },
+
+  completionButtons: { width: '100%', gap: Spacing.s3 },
+  button: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 12, borderRadius: Radii.card, gap: Spacing.s2 },
+  learnButton:      { backgroundColor: Colors.purple500 },
+  scoreboardButton: { backgroundColor: Colors.gold500 },
+  playAgainButton:  { backgroundColor: Colors.green500 },
+  levelsButton:     { backgroundColor: Colors.purple500 },
+  newPuzzleButton:  { backgroundColor: Colors.orange500 },
+  homeButton:       { backgroundColor: Colors.blue500 },
+  buttonText: { color: Colors.onCoral, fontSize: FontSizes.caption, fontFamily: Fonts.bodyBold },
+
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center', padding: Spacing.s5 },
+  modalContent: { backgroundColor: Colors.paper, borderRadius: Radii.hero, padding: Spacing.s5, width: '100%', maxWidth: 400, maxHeight: '80%' },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.s5 },
+  modalTitle: { fontSize: FontSizes.h3, fontFamily: Fonts.heading, color: Colors.ink },
+  closeButton: { padding: 5 },
+  modalScoreboardList: { maxHeight: 400 },
   modalScoreboardEntry: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.slate,
-    padding: Spacing.s4,
-    borderRadius: Radii.input,
-    marginBottom: Spacing.s3,
+    flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.slate,
+    padding: Spacing.s4, borderRadius: Radii.input, marginBottom: Spacing.s3,
   },
-  modalScoreboardRank: {
-    fontSize: FontSizes.label,
-    fontFamily: Fonts.bodyBold,
-    color: Colors.coral600,
-    width: 45,
-  },
-  modalScoreboardDetails: {
-    flex: 1,
-  },
-  modalScoreboardScore: {
-    fontSize: FontSizes.body,
-    fontFamily: Fonts.bodyBold,
-    color: Colors.ink,
-  },
-  modalScoreboardInfo: {
-    fontSize: FontSizes.small,
-    fontFamily: Fonts.body,
-    color: Colors.ink2,
-    marginTop: 3,
-  },
+  modalScoreboardRank: { fontSize: FontSizes.label, fontFamily: Fonts.bodyBold, color: Colors.coral600, width: 45 },
+  modalScoreboardDetails: { flex: 1 },
+  modalScoreboardScore: { fontSize: FontSizes.body, fontFamily: Fonts.bodyBold, color: Colors.ink },
+  modalScoreboardInfo: { fontSize: FontSizes.small, fontFamily: Fonts.body, color: Colors.ink2, marginTop: 3 },
 });
