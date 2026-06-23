@@ -1,0 +1,39 @@
+{
+  "pack": {
+    "name": "Flags", "icon": "🚩", "color": "#4C7DF0",
+    "ageBand": "5-8", "isFree": false, "freeSampleCount": 10,
+    "productId": "pack.flags", "order": 2
+  },
+  "items": [
+    {
+      "name": "Brazil",
+      "image_base64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAI9jU77zgAAAABJRU5ErkJggg==",
+      "learn": {
+        "structured": [
+          {"label": "Capital", "value": "Brasília"},
+          {"label": "Population", "value": "212 million"},
+          {"label": "Continent", "value": "South America"},
+          {"label": "Cool fact", "value": "Home to most of the Amazon rainforest 🌳"}
+        ],
+        "shortText": "Brazil is the biggest country in South America! It's famous for soccer, colorful carnivals, and the giant Amazon rainforest.",
+        "detailText": "Brazil is the largest country in South America and the fifth-largest in the whole world. About 212 million people live there, and its capital city is Brasília. Brazil has most of the Amazon rainforest, home to millions of animals and plants you won't find anywhere else!",
+        "emoji": "🇧🇷"
+      }
+    },
+    {
+      "name": "Japan",
+      "image_base64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAI9jU77zgAAAABJRU5ErkJggg==",
+      "learn": {
+        "structured": [
+          {"label": "Capital", "value": "Tokyo"},
+          {"label": "Population", "value": "125 million"},
+          {"label": "Continent", "value": "Asia"},
+          {"label": "Cool fact", "value": "Made of almost 7,000 islands! 🏝️"}
+        ],
+        "shortText": "Japan is a country made of thousands of islands in Asia. It's famous for cherry blossoms, fast trains, and yummy sushi!",
+        "detailText": "Japan is an island country in Asia made of almost 7,000 islands. Its capital is Tokyo, one of the biggest cities in the world. Japan is known for beautiful pink cherry blossom trees, super-fast bullet trains, and inventing lots of video games!",
+        "emoji": "🇯🇵"
+      }
+    }
+  ]
+}

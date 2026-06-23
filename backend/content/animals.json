@@ -1,0 +1,39 @@
+{
+  "pack": {
+    "name": "Animals", "icon": "🦁", "color": "#4CAF50",
+    "ageBand": "3-5", "isFree": true, "freeSampleCount": 0,
+    "productId": null, "order": 1
+  },
+  "items": [
+    {
+      "name": "Lion",
+      "image_base64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAI9jU77zgAAAABJRU5ErkJggg==",
+      "learn": {
+        "structured": [
+          {"label": "Lives in", "value": "Africa"},
+          {"label": "Eats", "value": "Meat"},
+          {"label": "Sound", "value": "Roar!"},
+          {"label": "Cool fact", "value": "A lion's roar can be heard 8 km away! 🔊"}
+        ],
+        "shortText": "The lion is called the King of the Jungle! Lions live together in families called prides and love to nap in the sun.",
+        "detailText": "Lions are big, strong cats that live in Africa. They live in family groups called prides. Daddy lions have fluffy manes around their heads. Lions sleep up to 20 hours a day and their mighty roar can be heard from very far away!",
+        "emoji": "🦁"
+      }
+    },
+    {
+      "name": "Elephant",
+      "image_base64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAI9jU77zgAAAABJRU5ErkJggg==",
+      "learn": {
+        "structured": [
+          {"label": "Lives in", "value": "Africa & Asia"},
+          {"label": "Eats", "value": "Plants"},
+          {"label": "Sound", "value": "Trumpet!"},
+          {"label": "Cool fact", "value": "The biggest animal on land! 🐘"}
+        ],
+        "shortText": "Elephants are the biggest animals that live on land. They use their long trunks like a hand to grab food and squirt water!",
+        "detailText": "Elephants are the largest land animals on Earth. They have a long nose called a trunk that they use to pick up food, drink water, and even give themselves a bath. Elephants are very smart and never forget their friends!",
+        "emoji": "🐘"
+      }
+    }
+  ]
+}
