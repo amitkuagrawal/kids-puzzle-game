@@ -12,6 +12,13 @@ def _make_pack(name="TestFlags"):
     r.raise_for_status()
 
 def _cleanup(name="TestFlags"):
+    # Delete all puzzles in this category first
+    pr = requests.get(f"{BASE}/puzzles/category/{name}")
+    pr.raise_for_status()
+    for p in pr.json():
+        requests.delete(f"{BASE}/puzzles/{p['id']}").raise_for_status()
+
+    # Then delete the category itself (if it exists)
     r = requests.get(f"{BASE}/categories")
     r.raise_for_status()
     cats = r.json()
@@ -37,7 +44,6 @@ def test_packs_endpoint_returns_metadata():
 def test_packs_item_count():
     _cleanup()
     _make_pack()
-    puzzle_id = None
     try:
         # Create a puzzle in the TestFlags category
         pr = requests.post(f"{BASE}/puzzles", json={
@@ -46,7 +52,6 @@ def test_packs_item_count():
             "category": "TestFlags",
         })
         pr.raise_for_status()
-        puzzle_id = pr.json()["id"]
 
         r = requests.get(f"{BASE}/packs")
         assert r.status_code == 200
@@ -54,8 +59,6 @@ def test_packs_item_count():
         pack = next(p for p in packs if p["name"] == "TestFlags")
         assert pack["item_count"] == 1, f"expected item_count 1, got {pack['item_count']}"
     finally:
-        if puzzle_id:
-            requests.delete(f"{BASE}/puzzles/{puzzle_id}")
         _cleanup()
 
 def _make_item(name="Brazil", category="TestFlags"):
