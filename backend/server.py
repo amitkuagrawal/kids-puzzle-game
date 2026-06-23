@@ -34,10 +34,21 @@ class PuzzleImage(BaseModel):
     image_base64: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
+class StructuredFact(BaseModel):
+    label: str          # e.g. "Capital"
+    value: str          # e.g. "Brasília"
+
+class LearnPayload(BaseModel):
+    structured: List[StructuredFact] = []
+    shortText: str = ""        # ~2 kid-friendly sentences
+    detailText: str = ""       # ~1 paragraph "read more"
+    emoji: Optional[str] = None
+
 class PuzzleImageCreate(BaseModel):
     name: str
     image_base64: str
     category: Optional[str] = None
+    learn: Optional[LearnPayload] = None
 
 class PuzzleImageResponse(BaseModel):
     id: str
@@ -47,11 +58,34 @@ class PuzzleImageResponse(BaseModel):
     category: Optional[str] = None
     is_preloaded: bool = False
 
+class ItemLearnResponse(BaseModel):
+    id: str
+    name: str
+    image_base64: str
+    category: Optional[str] = None
+    learn: Optional[LearnPayload] = None
+
+class PackResponse(BaseModel):
+    name: str
+    icon: str = "📁"
+    color: str = "#667eea"
+    ageBand: str = "all-ages"          # "3-5" | "5-8" | "8-12" | "all-ages"
+    isFree: bool = False
+    freeSampleCount: int = 0
+    productId: Optional[str] = None
+    order: int = 0
+    item_count: int = 0
+
 # Category Models
 class CategoryCreate(BaseModel):
     name: str
     icon: Optional[str] = "📁"
     color: Optional[str] = "#667eea"
+    ageBand: Optional[str] = "all-ages"
+    isFree: Optional[bool] = False
+    freeSampleCount: Optional[int] = 0
+    productId: Optional[str] = None
+    order: Optional[int] = 0
 
 class CategoryResponse(BaseModel):
     id: str
