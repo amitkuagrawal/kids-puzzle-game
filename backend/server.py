@@ -369,6 +369,40 @@ async def get_packs():
         logging.error(f"Error fetching packs: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+def _item_learn_response(doc) -> ItemLearnResponse:
+    learn = doc.get('learn')
+    return ItemLearnResponse(
+        id=str(doc['_id']),
+        name=doc['name'],
+        image_base64=doc['image_base64'],
+        category=doc.get('category'),
+        learn=LearnPayload(**learn) if learn else None,
+    )
+
+@api_router.get("/packs/{pack_name}/items", response_model=List[ItemLearnResponse])
+async def get_pack_items(pack_name: str):
+    """Items in a pack, including the learn payload. (Phase 2 adds entitlement gating.)"""
+    try:
+        docs = await db.puzzles.find({'category': pack_name}).sort('created_at', 1).to_list(500)
+        return [_item_learn_response(d) for d in docs]
+    except Exception as e:
+        logging.error(f"Error fetching pack items: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/items/{item_id}", response_model=ItemLearnResponse)
+async def get_item(item_id: str):
+    """Single item with its learn payload, by Mongo id."""
+    try:
+        doc = await db.puzzles.find_one({'_id': ObjectId(item_id)})
+        if not doc:
+            raise HTTPException(status_code=404, detail="Item not found")
+        return _item_learn_response(doc)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Error fetching item: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+
 @api_router.get("/puzzles/category/{category_name}")
 async def get_puzzles_by_category(category_name: str):
     """Get all puzzles in a specific category"""
