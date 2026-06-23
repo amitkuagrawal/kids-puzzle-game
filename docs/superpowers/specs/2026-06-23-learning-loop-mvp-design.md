@@ -60,9 +60,17 @@ level for context.
 | **1. Learning Loop** | Content model, backend serving, learning screen, flags + animals content | Closed test (shows the real product) |
 | **2. Monetization** | RevenueCat, IAP packs, subscription, entitlement gating, age-band surfacing | Public production launch |
 | **3. Launch Prep** | EAS build, Play Console listing, privacy policy, data-safety, closed test | Production |
+| **4. Content Ops (VA tooling)** | Extend admin dashboard with learning-content forms + CSV/spreadsheet batch import | Scaling content via a non-technical VA |
 
 Testers in the closed test get everything unlocked, so Phase 1 alone makes a complete,
 demonstrable build.
+
+**Content operations (Phase 4):** Amit intends to hire a virtual assistant to author and
+upload packs. The existing `backend/admin_dashboard.html` already does category management
+and bulk image upload; Phase 4 extends it so a VA can fill the full `learn` payload
+(structured facts, short/detail text, age-band, price) through **forms only — no JSON,
+terminal, or code** — plus a **CSV/spreadsheet import** for batch pack prep. The
+backend-served content model (§6.1–6.2) already makes this possible; Phase 4 is UI only.
 
 ---
 
