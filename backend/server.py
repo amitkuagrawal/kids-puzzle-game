@@ -81,11 +81,11 @@ class CategoryCreate(BaseModel):
     name: str
     icon: Optional[str] = "📁"
     color: Optional[str] = "#667eea"
-    ageBand: Optional[str] = "all-ages"
-    isFree: Optional[bool] = False
-    freeSampleCount: Optional[int] = 0
+    ageBand: str = "all-ages"
+    isFree: bool = False
+    freeSampleCount: int = 0
     productId: Optional[str] = None
-    order: Optional[int] = 0
+    order: int = 0
 
 class CategoryResponse(BaseModel):
     id: str
