@@ -345,6 +345,30 @@ async def get_preloaded_puzzles():
         logging.error(f"Error fetching preloaded puzzles: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.get("/packs", response_model=List[PackResponse])
+async def get_packs():
+    """List packs (categories) with learning/pricing metadata and item counts."""
+    try:
+        categories = await db.categories.find().sort('order', 1).to_list(100)
+        result = []
+        for cat in categories:
+            count = await db.puzzles.count_documents({'category': cat['name']})
+            result.append(PackResponse(
+                name=cat['name'],
+                icon=cat.get('icon', '📁'),
+                color=cat.get('color', '#667eea'),
+                ageBand=cat.get('ageBand', 'all-ages'),
+                isFree=cat.get('isFree', False),
+                freeSampleCount=cat.get('freeSampleCount', 0),
+                productId=cat.get('productId'),
+                order=cat.get('order', 0),
+                item_count=count,
+            ))
+        return result
+    except Exception as e:
+        logging.error(f"Error fetching packs: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.get("/puzzles/category/{category_name}")
 async def get_puzzles_by_category(category_name: str):
     """Get all puzzles in a specific category"""
