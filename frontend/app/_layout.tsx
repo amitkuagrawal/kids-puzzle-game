@@ -29,6 +29,7 @@ export default function RootLayout() {
       <Stack.Screen name="child/puzzle-gallery" />
       <Stack.Screen name="child/difficulty-select" />
       <Stack.Screen name="child/puzzle-game" />
+      <Stack.Screen name="child/learn" />
       <Stack.Screen name="child/leaderboard" />
       <Stack.Screen name="parent/dashboard" />
     </Stack>
