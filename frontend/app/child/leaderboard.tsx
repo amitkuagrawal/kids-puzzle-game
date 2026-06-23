@@ -105,11 +105,11 @@ export default function Leaderboard() {
     return '#2196F3';
   };
 
-  const getRankIcon = (rank: number): string => {
-    if (rank === 1) return 'trophy';
-    if (rank === 2) return 'medal';
-    if (rank === 3) return 'medal-outline';
-    return 'ribbon';
+  const getRankIcon = (rank: number) => {
+    if (rank === 1) return 'trophy' as const;
+    if (rank === 2) return 'medal' as const;
+    if (rank === 3) return 'medal-outline' as const;
+    return 'ribbon' as const;
   };
 
   const getStreakColor = (streak: number): string => {

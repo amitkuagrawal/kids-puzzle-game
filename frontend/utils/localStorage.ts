@@ -1,8 +1,9 @@
-import * as FileSystem from 'expo-file-system';
+import * as LegacyFileSystem from 'expo-file-system/src/legacy/FileSystem';
+import { EncodingType } from 'expo-file-system/src/legacy/FileSystem.types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
-const PUZZLES_DIR = FileSystem.documentDirectory ? FileSystem.documentDirectory + 'puzzles/' : null;
+const PUZZLES_DIR = LegacyFileSystem.documentDirectory ? LegacyFileSystem.documentDirectory + 'puzzles/' : null;
 const USER_PUZZLES_KEY = '@user_puzzles';
 const LEVEL_PROGRESS_KEY = '@level_progress';
 
@@ -23,9 +24,9 @@ const ensureDirectoryExists = async () => {
   if (isWeb || !PUZZLES_DIR) return;
   
   try {
-    const dirInfo = await FileSystem.getInfoAsync(PUZZLES_DIR);
+    const dirInfo = await LegacyFileSystem.getInfoAsync(PUZZLES_DIR);
     if (!dirInfo.exists) {
-      await FileSystem.makeDirectoryAsync(PUZZLES_DIR, { intermediates: true });
+      await LegacyFileSystem.makeDirectoryAsync(PUZZLES_DIR, { intermediates: true });
     }
   } catch (error) {
     console.error('Error creating directory:', error);
@@ -54,8 +55,8 @@ export const saveImageLocally = async (
     const fileUri = PUZZLES_DIR + fileName;
     
     try {
-      await FileSystem.writeAsStringAsync(fileUri, base64Image, {
-        encoding: FileSystem.EncodingType.Base64,
+      await LegacyFileSystem.writeAsStringAsync(fileUri, base64Image, {
+        encoding: EncodingType.Base64,
       });
       imageUri = fileUri;
     } catch (error) {
@@ -113,7 +114,7 @@ export const deleteLocalPuzzle = async (puzzleId: string): Promise<void> => {
     // Delete file if it exists and we're on native
     if (!isWeb && puzzle.imageUri && !puzzle.imageUri.startsWith('data:') && PUZZLES_DIR) {
       try {
-        await FileSystem.deleteAsync(puzzle.imageUri, { idempotent: true });
+        await LegacyFileSystem.deleteAsync(puzzle.imageUri, { idempotent: true });
       } catch (error) {
         console.error('Error deleting file:', error);
       }
@@ -135,8 +136,8 @@ export const getImageAsBase64 = async (imageUri: string): Promise<string> => {
   // If it's a file URI, read it
   if (!isWeb && PUZZLES_DIR) {
     try {
-      const base64 = await FileSystem.readAsStringAsync(imageUri, {
-        encoding: FileSystem.EncodingType.Base64,
+      const base64 = await LegacyFileSystem.readAsStringAsync(imageUri, {
+        encoding: EncodingType.Base64,
       });
       return `data:image/jpeg;base64,${base64}`;
     } catch (error) {
