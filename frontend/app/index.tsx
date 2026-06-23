@@ -1,414 +1,260 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Animated, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Analytics } from '../utils/analytics';
 import { getUserProfile } from '../services/firebase-service';
-import { Colors, Fonts, FontSizes, Radii, Spacing, Shadows } from '../constants/theme';
+import { Colors, Fonts, FontSizes, Spacing } from '../constants/theme';
+import Pip from '../components/Pip';
+import CoinChip from '../components/CoinChip';
+import LevelRing from '../components/LevelRing';
 
 const { width } = Dimensions.get('window');
 
+const FLOATERS = ['⭐', '✨', '💫', '🌟'];
+
 export default function Index() {
   const router = useRouter();
+  const [coins] = useState(120);
+  const [level] = useState(3);
+  const [pressed, setPressed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Animation refs for puzzle pieces
-  const piece1Anim = useRef(new Animated.Value(0)).current;
-  const piece2Anim = useRef(new Animated.Value(0)).current;
-  const piece3Anim = useRef(new Animated.Value(0)).current;
-  const piece4Anim = useRef(new Animated.Value(0)).current;
-  const pulseAnim = useRef(new Animated.Value(1)).current;
+  // Bobbing animation for Pip
+  const bob = useRef(new Animated.Value(0)).current;
+  // Float animations for decorative stars
+  const floatAnims = useRef(FLOATERS.map(() => new Animated.Value(0))).current;
 
   useEffect(() => {
-    // Track app opened
     Analytics.appOpened();
     Analytics.sessionStart();
 
-    // Start puzzle assembly animation
-    startPuzzleAnimation();
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(bob, { toValue: -10, duration: 1200, useNativeDriver: true }),
+        Animated.timing(bob, { toValue: 0,   duration: 1200, useNativeDriver: true }),
+      ])
+    ).start();
+
+    floatAnims.forEach((anim, i) => {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(anim, { toValue: 1,  duration: 1400 + i * 300, useNativeDriver: true }),
+          Animated.timing(anim, { toValue: -1, duration: 1400 + i * 300, useNativeDriver: true }),
+        ])
+      ).start();
+    });
   }, []);
 
-  const handlePlayPuzzle = async () => {
+  const goPlay = async () => {
     try {
       setIsLoading(true);
-
-      // Check if user profile exists
       const userProfile = await getUserProfile();
-
       if (!userProfile) {
-        // No profile exists, go to welcome screen first
         router.push('/child/welcome');
       } else {
-        // Profile exists, go directly to play/join choice
         router.push('/child/join-group');
       }
     } catch {
-      // On error, go to welcome screen to be safe
       router.push('/child/welcome');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const startPuzzleAnimation = () => {
-    // Animate puzzle pieces coming together
-    Animated.loop(
-      Animated.sequence([
-        // Pieces fly in from corners
-        Animated.parallel([
-          Animated.timing(piece1Anim, {
-            toValue: 1,
-            duration: 800,
-            useNativeDriver: true,
-          }),
-          Animated.timing(piece2Anim, {
-            toValue: 1,
-            duration: 800,
-            delay: 100,
-            useNativeDriver: true,
-          }),
-          Animated.timing(piece3Anim, {
-            toValue: 1,
-            duration: 800,
-            delay: 200,
-            useNativeDriver: true,
-          }),
-          Animated.timing(piece4Anim, {
-            toValue: 1,
-            duration: 800,
-            delay: 300,
-            useNativeDriver: true,
-          }),
-        ]),
-        // Pulse when complete
-        Animated.sequence([
-          Animated.timing(pulseAnim, {
-            toValue: 1.1,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-          Animated.timing(pulseAnim, {
-            toValue: 1,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-        ]),
-        // Wait before resetting
-        Animated.delay(1500),
-        // Reset pieces
-        Animated.parallel([
-          Animated.timing(piece1Anim, {
-            toValue: 0,
-            duration: 400,
-            useNativeDriver: true,
-          }),
-          Animated.timing(piece2Anim, {
-            toValue: 0,
-            duration: 400,
-            useNativeDriver: true,
-          }),
-          Animated.timing(piece3Anim, {
-            toValue: 0,
-            duration: 400,
-            useNativeDriver: true,
-          }),
-          Animated.timing(piece4Anim, {
-            toValue: 0,
-            duration: 400,
-            useNativeDriver: true,
-          }),
-        ]),
-        Animated.delay(500),
-      ])
-    ).start();
-  };
-
-  // Calculate puzzle piece positions
-  const piece1Style = {
-    transform: [
-      {
-        translateX: piece1Anim.interpolate({
-          inputRange: [0, 1],
-          outputRange: [-60, 0],
-        }),
-      },
-      {
-        translateY: piece1Anim.interpolate({
-          inputRange: [0, 1],
-          outputRange: [-60, 0],
-        }),
-      },
-      { scale: pulseAnim },
-    ],
-    opacity: piece1Anim,
-  };
-
-  const piece2Style = {
-    transform: [
-      {
-        translateX: piece2Anim.interpolate({
-          inputRange: [0, 1],
-          outputRange: [60, 0],
-        }),
-      },
-      {
-        translateY: piece2Anim.interpolate({
-          inputRange: [0, 1],
-          outputRange: [-60, 0],
-        }),
-      },
-      { scale: pulseAnim },
-    ],
-    opacity: piece2Anim,
-  };
-
-  const piece3Style = {
-    transform: [
-      {
-        translateX: piece3Anim.interpolate({
-          inputRange: [0, 1],
-          outputRange: [-60, 0],
-        }),
-      },
-      {
-        translateY: piece3Anim.interpolate({
-          inputRange: [0, 1],
-          outputRange: [60, 0],
-        }),
-      },
-      { scale: pulseAnim },
-    ],
-    opacity: piece3Anim,
-  };
-
-  const piece4Style = {
-    transform: [
-      {
-        translateX: piece4Anim.interpolate({
-          inputRange: [0, 1],
-          outputRange: [60, 0],
-        }),
-      },
-      {
-        translateY: piece4Anim.interpolate({
-          inputRange: [0, 1],
-          outputRange: [60, 0],
-        }),
-      },
-      { scale: pulseAnim },
-    ],
-    opacity: piece4Anim,
-  };
-
   return (
-    <View style={styles.container}>
-      {/* Decorative elements - moved to background with pointerEvents in styles */}
-      <View style={styles.decoration}>
-        <Ionicons name="star" size={30} color={Colors.gold500} style={styles.star1} />
-        <Ionicons name="star" size={25} color={Colors.pink400} style={styles.star2} />
-        <Ionicons name="star" size={35} color={Colors.sky300} style={styles.star3} />
+    <LinearGradient
+      colors={['#FFB3D9', '#FFD86F', '#A8E6FF']}
+      locations={[0, 0.6, 1]}
+      style={styles.container}
+    >
+      {/* Floating decorative emojis */}
+      {FLOATERS.map((emoji, i) => (
+        <Animated.Text
+          key={i}
+          style={[
+            styles.floater,
+            floaterPositions[i],
+            { transform: [{ translateX: floatAnims[i].interpolate({ inputRange: [-1, 1], outputRange: [-6, 6] }) }] },
+          ]}
+        >
+          {emoji}
+        </Animated.Text>
+      ))}
+
+      {/* Top row: level + coins */}
+      <View style={styles.topRow}>
+        <LevelRing level={level} fill={0.65} size={50} />
+        <CoinChip value={coins} big />
+      </View>
+
+      {/* Pip mascot */}
+      <Animated.View style={[styles.pipWrap, { transform: [{ translateY: bob }] }]}>
+        <Pip size={150} mood="happy" hat="none" />
+      </Animated.View>
+
+      {/* Speech bubble */}
+      <View style={styles.bubble}>
+        <Text style={styles.bubbleText}>Hi! I'm Pip 👋</Text>
+        <View style={styles.bubbleTip} />
       </View>
 
       {/* Title */}
-      <View style={styles.titleContainer}>
-        <Ionicons name="extension-puzzle" size={60} color={Colors.coral600} />
+      <View style={styles.titleWrap}>
         <Text style={styles.title}>Puzzle Fun!</Text>
-        <Text style={styles.subtitle}>For Kids 5-8 Years</Text>
+        <Text style={styles.tagline}>Pick a land and play 🌟</Text>
       </View>
 
-      {/* Animated Puzzle Demo - Clickable */}
-      <TouchableOpacity
-        style={styles.puzzleDemo}
-        onPress={handlePlayPuzzle}
-        activeOpacity={0.8}
+      {/* 3D Play button */}
+      <Pressable
+        onPressIn={() => setPressed(true)}
+        onPressOut={() => { setPressed(false); goPlay(); }}
+        style={[styles.playBtn, pressed && styles.playBtnPressed]}
         disabled={isLoading}
       >
-        <Text style={styles.demoText}>📸 Upload Your Fav Picture!</Text>
-        <View style={styles.puzzleContainer}>
-          <Animated.View style={[styles.puzzlePiece, styles.piece1, piece1Style]}>
-            <Ionicons name="image" size={32} color={Colors.green500} />
-          </Animated.View>
-          <Animated.View style={[styles.puzzlePiece, styles.piece2, piece2Style]}>
-            <Ionicons name="image" size={32} color={Colors.blue500} />
-          </Animated.View>
-          <Animated.View style={[styles.puzzlePiece, styles.piece3, piece3Style]}>
-            <Ionicons name="image" size={32} color={Colors.orange500} />
-          </Animated.View>
-          <Animated.View style={[styles.puzzlePiece, styles.piece4, piece4Style]}>
-            <Ionicons name="image" size={32} color={Colors.purple500} />
-          </Animated.View>
-        </View>
-        <Text style={styles.demoText}>🧩 Solve the Puzzle!</Text>
-        <Text style={styles.tapHint}>Tap to start!</Text>
-      </TouchableOpacity>
+        <Text style={styles.playBtnText}>
+          {isLoading ? '⏳ Loading...' : '🎮 Play Puzzle!'}
+        </Text>
+      </Pressable>
 
-      {/* Buttons */}
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={[styles.button, styles.childButton]}
-          onPress={handlePlayPuzzle}
-          activeOpacity={0.8}
-          disabled={isLoading}
-        >
-          <Ionicons name="game-controller" size={40} color={Colors.onCoral} />
-          <Text style={styles.buttonText}>
-            {isLoading ? 'Loading...' : 'Play Puzzle!'}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.button, styles.parentButton]}
-          onPress={() => router.push('/parent/dashboard')}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="people" size={32} color={Colors.onCoral} />
-          <Text style={styles.buttonTextSmall}>Parent Dashboard</Text>
-        </TouchableOpacity>
+      {/* Mini card row */}
+      <View style={styles.miniRow}>
+        <Pressable style={styles.miniCard} onPress={goPlay}>
+          <Text style={styles.miniCardText}>🛍️ Shop</Text>
+        </Pressable>
+        <Pressable style={styles.miniCard} onPress={() => router.push('/parent/dashboard')}>
+          <Text style={styles.miniCardText}>👨‍👩‍👧 Parents</Text>
+        </Pressable>
       </View>
-    </View>
+    </LinearGradient>
   );
 }
+
+const floaterPositions: any[] = [
+  { position: 'absolute', top: 80,  left: 24,  fontSize: 22 },
+  { position: 'absolute', top: 130, right: 30, fontSize: 18 },
+  { position: 'absolute', top: 200, left: 50,  fontSize: 16 },
+  { position: 'absolute', top: 60,  right: 60, fontSize: 20 },
+];
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.coral200,
+    paddingHorizontal: 18,
+    paddingTop: 60,
+    paddingBottom: 40,
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: Spacing.s5,
-    paddingHorizontal: Spacing.s5,
   },
-  titleContainer: {
+  floater: {
+    pointerEvents: 'none',
+  },
+
+  topRow: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: Spacing.s5,
+  },
+
+  pipWrap: {
+    marginTop: Spacing.s5,
+  },
+
+  bubble: {
+    backgroundColor: '#fff',
+    borderRadius: 22,
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    marginTop: -12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 0,
+    elevation: 3,
+  },
+  bubbleTip: {
+    position: 'absolute',
+    top: -8,
+    left: 24,
+    width: 16,
+    height: 16,
+    backgroundColor: '#fff',
+    transform: [{ rotate: '45deg' }],
+    zIndex: -1,
+  },
+  bubbleText: {
+    fontFamily: Fonts.heading,
+    fontSize: FontSizes.body,
+    color: '#2A8AD9',
+  },
+
+  titleWrap: {
+    alignItems: 'center',
+    marginTop: 18,
+    marginBottom: 22,
   },
   title: {
     fontFamily: Fonts.display,
-    fontSize: 42,
-    fontWeight: 'bold',
+    fontSize: 38,
     color: Colors.coral600,
-    marginTop: Spacing.s3,
-    textShadowColor: 'rgba(0, 0, 0, 0.1)',
-    textShadowOffset: { width: 2, height: 2 },
-    textShadowRadius: 5,
+    textShadowColor: 'rgba(0,0,0,0.12)',
+    textShadowOffset: { width: 0, height: 3 },
+    textShadowRadius: 0,
+    letterSpacing: -0.5,
   },
-  subtitle: {
-    fontFamily: Fonts.body,
-    fontSize: FontSizes.body,
-    color: Colors.coral600,
-    marginTop: Spacing.s1,
-    fontWeight: '600',
-  },
-  puzzleDemo: {
-    alignItems: 'center',
-    marginBottom: Spacing.s5,
-    paddingHorizontal: Spacing.s5,
-  },
-  demoText: {
-    fontFamily: Fonts.bodyBold,
-    fontSize: FontSizes.caption,
-    color: Colors.coral600,
-    fontWeight: 'bold',
-    marginVertical: 6,
-  },
-  tapHint: {
-    fontFamily: Fonts.body,
-    fontSize: 12,
-    color: Colors.coral600,
-    fontWeight: '600',
-    marginTop: 3,
-    opacity: 0.8,
-  },
-  puzzleContainer: {
-    width: 120,
-    height: 120,
-    position: 'relative',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  puzzlePiece: {
-    position: 'absolute',
-    width: 50,
-    height: 50,
-    backgroundColor: Colors.cream300,
-    borderRadius: Radii.chip,
-    justifyContent: 'center',
-    alignItems: 'center',
-    ...Shadows.s2,
-  },
-  piece1: {
-    top: Spacing.s3,
-    left: Spacing.s3,
-  },
-  piece2: {
-    top: Spacing.s3,
-    right: Spacing.s3,
-  },
-  piece3: {
-    bottom: Spacing.s3,
-    left: Spacing.s3,
-  },
-  piece4: {
-    bottom: Spacing.s3,
-    right: Spacing.s3,
-  },
-  buttonContainer: {
-    width: '100%',
-    alignItems: 'center',
-    gap: Spacing.s3,
-  },
-  button: {
-    width: width * 0.8,
-    height: 100,
-    borderRadius: Radii.tile,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...Shadows.s3,
-  },
-  childButton: {
-    backgroundColor: Colors.coral600,
-  },
-  parentButton: {
-    backgroundColor: '#6A1B9A',
-    height: 80,
-  },
-  adminButton: {
-    backgroundColor: Colors.coral400,
-    height: 80,
-  },
-  buttonText: {
-    fontFamily: Fonts.display,
-    fontSize: FontSizes.h2,
-    fontWeight: 'bold',
-    color: Colors.onCoral,
-    marginTop: Spacing.s2,
-  },
-  buttonTextSmall: {
+  tagline: {
     fontFamily: Fonts.heading,
-    fontSize: FontSizes.body,
-    fontWeight: 'bold',
-    color: Colors.onCoral,
-    marginTop: Spacing.s1,
+    fontSize: FontSizes.small,
+    color: '#A14040',
+    marginTop: 2,
   },
-  decoration: {
-    position: 'absolute',
+
+  playBtn: {
     width: '100%',
-    height: '100%',
-    pointerEvents: 'none',
+    paddingVertical: 20,
+    borderRadius: 26,
+    backgroundColor: '#FD7979',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#C24747',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 6,
+    transform: [{ translateY: 0 }],
   },
-  star1: {
-    position: 'absolute',
-    top: 100,
-    left: 30,
+  playBtnPressed: {
+    transform: [{ translateY: 3 }],
+    shadowOffset: { width: 0, height: 3 },
   },
-  star2: {
-    position: 'absolute',
-    top: 150,
-    right: Spacing.s7,
+  playBtnText: {
+    fontFamily: Fonts.display,
+    fontSize: 26,
+    color: '#fff',
   },
-  star3: {
-    position: 'absolute',
-    bottom: 150,
-    left: 50,
+
+  miniRow: {
+    width: '100%',
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 14,
+  },
+  miniCard: {
+    flex: 1,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    paddingVertical: 14,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 0,
+    elevation: 4,
+  },
+  miniCardText: {
+    fontFamily: Fonts.display,
+    fontSize: 16,
+    color: '#6E5BFF',
   },
 });

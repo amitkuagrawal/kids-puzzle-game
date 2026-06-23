@@ -1,15 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  Image,
-  ActivityIndicator,
-  Dimensions,
-  Alert,
-  Modal,
+  View, Text, StyleSheet, Pressable, ScrollView,
+  Image, ActivityIndicator, Dimensions, Alert, Modal,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -22,701 +14,265 @@ import { Colors, Fonts, FontSizes, Radii, Spacing, Shadows } from '../../constan
 
 const { width } = Dimensions.get('window');
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
-const CARD_SIZE = (width - 48) / 2;
-const CARD_HEIGHT = CARD_SIZE * 1.2;
+const TILE_SIZE   = (width - 48) / 2;
 
-interface Puzzle {
-  id: string;
-  name: string;
-  image_base64: string;
-  created_at: string;
-}
+const LAND_THEME: Record<string, { bg: string; fg: string; icon: string; dark?: boolean }> = {
+  'Animals':   { bg: '#C7F0CF', fg: '#2E8B57', icon: '🦒' },
+  'Vehicles':  { bg: '#FFE3A8', fg: '#D77900', icon: '🚗' },
+  'Space':     { bg: '#1B1742', fg: '#B66BFF', icon: '🚀', dark: true },
+  'Letters':   { bg: '#FFD8B0', fg: '#C7541C', icon: '🔤' },
+  'Numbers':   { bg: '#C9E2FF', fg: '#1F6FE0', icon: '🔢' },
+  'Shapes':    { bg: '#FFD0E2', fg: '#C7378E', icon: '🔷' },
+  'My Pictures':{ bg: '#FEEAC9', fg: '#C7541C', icon: '📱' },
+};
 
-interface CategoryData {
-  category: string;
-  icon: string;
-  color: string;
-  puzzles: Puzzle[];
-}
+const DEFAULT_THEME = { bg: '#FEEAC9', fg: '#C7541C', icon: '🧩' };
+
+interface Puzzle { id: string; name: string; image_base64: string; created_at: string; }
+interface CategoryData { category: string; icon: string; color: string; puzzles: Puzzle[]; }
 
 export default function PuzzleGallery() {
   const router = useRouter();
-  const [categories, setCategories] = useState<CategoryData[]>([]);
+  const [categories, setCategories]     = useState<CategoryData[]>([]);
   const [localPuzzles, setLocalPuzzles] = useState<LocalPuzzle[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [processing, setProcessing] = useState(false);
-  const [selectedServerCategory, setSelectedServerCategory] = useState<CategoryData | null>(null);
-  const [solvedPuzzles, setSolvedPuzzles] = useState<Set<string>>(new Set());
+  const [loading, setLoading]           = useState(true);
+  const [processing, setProcessing]     = useState(false);
+  const [selectedCat, setSelectedCat]   = useState<CategoryData | null>(null);
 
-  useEffect(() => {
-    loadAllPuzzles();
-    loadSolvedPuzzles();
-  }, []);
+  useEffect(() => { loadAll(); }, []);
 
-  const loadSolvedPuzzles = async () => {
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/scores/solved`);
-      const data = await response.json();
-      setSolvedPuzzles(new Set(data.solved_puzzles || []));
-    } catch { /* solved-status is non-critical */ }
-  };
-
-  const isCategoryComplete = (categoryData: CategoryData): boolean => {
-    if (categoryData.puzzles.length === 0) return false;
-    return categoryData.puzzles.every(puzzle => solvedPuzzles.has(puzzle.id));
-  };
-
-  const getSolvedCount = (categoryData: CategoryData): number => {
-    return categoryData.puzzles.filter(puzzle => solvedPuzzles.has(puzzle.id)).length;
-  };
-
-  const loadAllPuzzles = async () => {
+  const loadAll = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${BACKEND_URL}/api/puzzles/preloaded`);
-      const serverCategories = await response.json();
-      const filteredCategories = serverCategories.filter(
-        (cat: CategoryData) => cat.category !== 'Uncategorized'
-      );
-      setCategories(filteredCategories);
-      const local = await getLocalPuzzles();
-      setLocalPuzzles(local);
+      const res = await fetch(`${BACKEND_URL}/api/puzzles/preloaded`);
+      const serverCats: CategoryData[] = await res.json();
+      setCategories(serverCats.filter(c => c.category !== 'Uncategorized'));
+      setLocalPuzzles(await getLocalPuzzles());
     } catch {
-      try {
-        const local = await getLocalPuzzles();
-        setLocalPuzzles(local);
-      } catch { /* local load failed silently */ }
-    } finally {
-      setLoading(false);
+      try { setLocalPuzzles(await getLocalPuzzles()); } catch {}
+    } finally { setLoading(false); }
+  };
+
+  const getImageUri = (d: string) => {
+    if (!d) return '';
+    if (d.startsWith('data:') || d.startsWith('file:')) return d;
+    return `data:image/jpeg;base64,${d}`;
+  };
+
+  const selectPuzzle = async (puzzle: any, isLocal = false) => {
+    try {
+      let imageBase64 = '';
+      if (isLocal) {
+        imageBase64 = await getImageAsBase64(puzzle.imageUri || puzzle._localImageUri || puzzle.image_base64);
+      } else {
+        const raw = puzzle.image_base64;
+        imageBase64 = raw.startsWith('data:') ? raw : `data:image/jpeg;base64,${raw}`;
+      }
+      if (!imageBase64) throw new Error();
+      router.push({ pathname: '/child/difficulty-select', params: { puzzleId: puzzle.id, puzzleName: puzzle.name, imageBase64 } });
+    } catch {
+      Alert.alert('Oops!', 'Could not load this puzzle. Please try again!');
     }
-  };
-
-  const selectPuzzle = async (puzzle: Puzzle | LocalPuzzle | any, isLocal: boolean = false) => {
-    router.push({
-      pathname: '/child/level-select',
-      params: {
-        categoryName: isLocal ? 'My Pictures' : 'Preloaded',
-      },
-    });
-  };
-
-  const openCategoryView = (category: CategoryData) => {
-    setSelectedServerCategory(category);
-  };
-
-  const closeCategoryView = () => {
-    setSelectedServerCategory(null);
   };
 
   const pickImage = async () => {
-    try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permission needed', 'Please allow access to your photos to upload a picture');
-        return;
-      }
-
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
-      });
-
-      if (!result.canceled && result.assets[0].uri) {
-        await processImage(result.assets[0].uri);
-      }
-    } catch {
-      Alert.alert('Oops!', 'Could not pick image. Please try again!');
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') { Alert.alert('Permission needed', 'Please allow access to your photos'); return; }
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true, aspect: [4, 3], quality: 1 });
+    if (!result.canceled && result.assets[0].uri) {
+      try {
+        setProcessing(true);
+        const m = await ImageManipulator.manipulateAsync(result.assets[0].uri, [{ resize: { width: 800 } }], { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG, base64: true });
+        if (m.base64) {
+          await saveImageLocally(m.base64, `My Puzzle ${new Date().toLocaleDateString()}`, 'My Pictures');
+          Analytics.puzzleUploaded(m.base64.length);
+          Alert.alert('Success!', 'Saved! Tap "My Pictures" to play.');
+          setLocalPuzzles(await getLocalPuzzles());
+        }
+      } catch { Alert.alert('Oops!', 'Could not process image'); }
+      finally { setProcessing(false); }
     }
   };
 
-  const processImage = async (imageUri: string) => {
-    try {
-      setProcessing(true);
-      const MAX_DIMENSION = 800;
-      const manipulatedImage = await ImageManipulator.manipulateAsync(
-        imageUri,
-        [{ resize: { width: MAX_DIMENSION } }],
-        { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG, base64: true }
-      );
+  const openMyPictures = () => setSelectedCat({
+    category: 'My Pictures', icon: '📱', color: Colors.coral400,
+    puzzles: localPuzzles.map(lp => ({ id: lp.id, name: lp.name, image_base64: lp.imageUri, created_at: lp.created_at, _localImageUri: lp.imageUri })) as any,
+  });
 
-      if (manipulatedImage.base64) {
-        const puzzleName = `My Puzzle ${new Date().toLocaleDateString()}`;
-        await saveImageLocally(manipulatedImage.base64, puzzleName, 'My Pictures');
-        Analytics.puzzleUploaded(manipulatedImage.base64.length);
-        Alert.alert('Success!', 'Your picture has been saved! Tap "My Pictures" to play.');
-        const local = await getLocalPuzzles();
-        setLocalPuzzles(local);
-      } else {
-        Alert.alert('Oops!', 'Could not process image');
-      }
-      setProcessing(false);
-    } catch {
-      setProcessing(false);
-      Alert.alert('Oops!', 'Could not process image');
-    }
-  };
+  const theme = (cat: string) => LAND_THEME[cat] ?? DEFAULT_THEME;
 
-  const localCategories = localPuzzles.reduce((acc, puzzle) => {
-    const cat = puzzle.category || 'My Pictures';
-    if (!acc[cat]) acc[cat] = [];
-    acc[cat].push(puzzle);
-    return acc;
-  }, {} as Record<string, LocalPuzzle[]>);
-
-  const getImageUri = (imageData: string): string => {
-    if (!imageData) return '';
-    if (imageData.startsWith('data:') || imageData.startsWith('file:')) return imageData;
-    return `data:image/jpeg;base64,${imageData}`;
-  };
-
-  const renderCategoryCard = (categoryData: CategoryData) => {
-    const previewImage = categoryData.puzzles.length > 0
-      ? getImageUri(categoryData.puzzles[0].image_base64)
-      : null;
-    const isComplete = isCategoryComplete(categoryData);
-    const solvedCount = getSolvedCount(categoryData);
-
+  const renderLandTile = (cat: CategoryData) => {
+    const t = theme(cat.category);
     return (
-      <TouchableOpacity
-        key={categoryData.category}
-        style={[styles.categoryCard, { borderColor: categoryData.color }]}
-        onPress={() => openCategoryView(categoryData)}
-        activeOpacity={0.8}
+      <Pressable
+        key={cat.category}
+        onPress={() => setSelectedCat(cat)}
+        style={({ pressed }) => [styles.tile, { backgroundColor: t.bg, transform: [{ translateY: pressed ? 2 : 0 }] }]}
       >
-        {previewImage ? (
-          <Image
-            source={{ uri: previewImage }}
-            style={styles.categoryPreviewImage}
-            resizeMode="cover"
-          />
-        ) : (
-          <View style={[styles.categoryPlaceholder, { backgroundColor: categoryData.color }]}>
-            <Text style={styles.categoryPlaceholderIcon}>{categoryData.icon}</Text>
-          </View>
-        )}
-        {isComplete && (
-          <View style={styles.categoryCompleteBadge}>
-            <Ionicons name="checkmark-circle" size={32} color={Colors.green500} />
-          </View>
-        )}
-        <View style={[styles.categoryCardFooter, { backgroundColor: categoryData.color }]}>
-          <Text style={styles.categoryCardIcon}>{categoryData.icon}</Text>
-          <Text style={styles.categoryCardTitle}>{categoryData.category}</Text>
-          <Text style={styles.categoryCardCount}>{solvedCount}/{categoryData.puzzles.length}</Text>
-        </View>
-      </TouchableOpacity>
+        <Text style={styles.tileIcon}>{t.icon}</Text>
+        <Text style={[styles.tileName, { color: t.dark ? '#fff' : t.fg }]}>{cat.category}</Text>
+        <Text style={[styles.tileCount, { color: t.dark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.5)' }]}>{cat.puzzles.length} puzzles</Text>
+      </Pressable>
     );
   };
 
-  const renderLocalPicturesCard = () => {
+  const renderMyPicturesTile = () => {
     if (localPuzzles.length === 0) return null;
-    const previewImage = localPuzzles.length > 0 ? localPuzzles[0].imageUri : null;
-
+    const t = theme('My Pictures');
     return (
-      <TouchableOpacity
-        key="local_pictures"
-        style={[styles.categoryCard, { borderColor: Colors.coral400 }]}
-        onPress={() => {
-          setSelectedServerCategory({
-            category: 'My Pictures',
-            icon: '📱',
-            color: Colors.coral400,
-            puzzles: localPuzzles.map(lp => ({
-              id: lp.id,
-              name: lp.name,
-              image_base64: lp.imageUri,
-              created_at: lp.created_at,
-              _localImageUri: lp.imageUri,
-            })) as any
-          });
-        }}
-        activeOpacity={0.8}
+      <Pressable
+        key="my-pictures"
+        onPress={openMyPictures}
+        style={({ pressed }) => [styles.tile, { backgroundColor: t.bg, transform: [{ translateY: pressed ? 2 : 0 }] }]}
       >
-        {previewImage ? (
-          <Image
-            source={{ uri: previewImage }}
-            style={styles.categoryPreviewImage}
-            resizeMode="cover"
-          />
-        ) : (
-          <View style={[styles.categoryPlaceholder, { backgroundColor: Colors.coral400 }]}>
-            <Text style={styles.categoryPlaceholderIcon}>📱</Text>
-          </View>
-        )}
-        <View style={[styles.categoryCardFooter, { backgroundColor: Colors.coral400 }]}>
-          <Text style={styles.categoryCardIcon}>📱</Text>
-          <Text style={styles.categoryCardTitle}>My Pictures</Text>
-          <Text style={styles.categoryCardCount}>{localPuzzles.length}</Text>
-        </View>
-      </TouchableOpacity>
+        <Text style={styles.tileIcon}>{t.icon}</Text>
+        <Text style={[styles.tileName, { color: t.fg }]}>My Pictures</Text>
+        <Text style={[styles.tileCount, { color: 'rgba(0,0,0,0.5)' }]}>{localPuzzles.length} puzzles</Text>
+      </Pressable>
     );
   };
 
-  const renderCategoryPuzzles = () => {
-    if (!selectedServerCategory) return null;
-    const isLocalCategory = selectedServerCategory.category === 'My Pictures';
-    const isComplete = isCategoryComplete(selectedServerCategory);
-    const solvedCount = getSolvedCount(selectedServerCategory);
-
-    return (
-      <Modal visible={true} animationType="slide" onRequestClose={closeCategoryView}>
-        <SafeAreaView style={styles.modalContainer} edges={['top']}>
-          <View style={[styles.modalHeader, { backgroundColor: selectedServerCategory.color }]}>
-            <TouchableOpacity onPress={closeCategoryView} style={styles.backButton}>
-              <Ionicons name="arrow-back" size={28} color={Colors.onCoral} />
-            </TouchableOpacity>
-            <View style={styles.modalHeaderTitle}>
-              <Text style={styles.modalHeaderIcon}>{selectedServerCategory.icon}</Text>
-              <Text style={styles.modalHeaderText}>{selectedServerCategory.category}</Text>
-              {isComplete && (
-                <Ionicons name="checkmark-circle" size={24} color={Colors.green500} style={{ marginLeft: Spacing.s2 }} />
-              )}
-            </View>
-            <Text style={styles.modalHeaderCount}>{solvedCount}/{selectedServerCategory.puzzles.length}</Text>
-          </View>
-
-          <ScrollView style={styles.puzzlesScrollView} contentContainerStyle={styles.puzzlesGridContainer}>
-            {selectedServerCategory.puzzles.map((puzzle) => {
-              const isSolved = solvedPuzzles.has(puzzle.id);
-              return (
-                <TouchableOpacity
-                  key={puzzle.id}
-                  style={styles.puzzleGridCard}
-                  onPress={() => {
-                    closeCategoryView();
-                    selectPuzzle(puzzle, isLocalCategory);
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <Image
-                    source={{ uri: getImageUri(puzzle.image_base64) }}
-                    style={styles.puzzleGridImage}
-                    resizeMode="cover"
-                  />
-                  {isSolved && (
-                    <View style={styles.puzzleSolvedBadge}>
-                      <Ionicons name="checkmark-circle" size={28} color={Colors.green500} />
-                    </View>
-                  )}
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-        </SafeAreaView>
-      </Modal>
-    );
-  };
+  const isLocal = selectedCat?.category === 'My Pictures';
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={32} color={Colors.onCoral} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Choose a Puzzle!</Text>
-        <View style={styles.placeholder} />
+        <Pressable onPress={() => router.back()} style={styles.backBtn}>
+          <Ionicons name="arrow-back" size={32} color="#fff" />
+        </Pressable>
+        <Text style={styles.headerTitle}>Choose a Land</Text>
+        <View style={{ width: 42 }} />
       </View>
 
       {loading ? (
-        <View style={styles.loadingContainer}>
+        <View style={styles.loading}>
           <ActivityIndicator size="large" color={Colors.coral600} />
           <Text style={styles.loadingText}>Loading puzzles...</Text>
         </View>
       ) : (
-        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-          {(categories.length > 0 || localPuzzles.length > 0) && (
-            <View style={styles.categoriesGrid}>
-              {categories.map(renderCategoryCard)}
-              {renderLocalPicturesCard()}
-            </View>
-          )}
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+          {/* Land grid */}
+          <View style={styles.grid}>
+            {categories.map(renderLandTile)}
+            {renderMyPicturesTile()}
+          </View>
 
+          {/* Empty state */}
           {categories.length === 0 && localPuzzles.length === 0 && (
-            <View style={styles.emptyContainer}>
-              <Ionicons name="images-outline" size={80} color={Colors.gold500} />
+            <View style={styles.empty}>
+              <Text style={{ fontSize: 60 }}>🧩</Text>
               <Text style={styles.emptyText}>No puzzles yet!</Text>
               <Text style={styles.emptySubText}>Upload your first picture below</Text>
             </View>
           )}
 
+          {/* Upload */}
           <View style={styles.uploadSection}>
-            <Text style={styles.sectionTitle}>📸 Add Your Own Picture</Text>
-            <TouchableOpacity
-              style={styles.uploadCard}
+            <Text style={styles.sectionLabel}>📸 Add Your Own Picture</Text>
+            <Pressable
+              style={({ pressed }) => [styles.uploadBtn, pressed && { opacity: 0.85 }]}
               onPress={pickImage}
               disabled={processing}
-              activeOpacity={0.8}
             >
               {processing ? (
-                <View style={styles.uploadContent}>
-                  <ActivityIndicator size="small" color={Colors.onCoral} />
-                  <Text style={styles.uploadText}>Processing...</Text>
-                </View>
+                <ActivityIndicator size="small" color="#fff" />
               ) : (
-                <View style={styles.uploadContent}>
-                  <View style={styles.uploadIconContainer}>
-                    <Ionicons name="camera" size={28} color={Colors.onCoral} />
-                  </View>
-                  <View style={styles.uploadTextContainer}>
+                <>
+                  <Ionicons name="camera" size={28} color="#fff" />
+                  <View>
                     <Text style={styles.uploadTitle}>Upload Picture</Text>
-                    <Text style={styles.uploadSubtitle}>Create your own puzzle!</Text>
+                    <Text style={styles.uploadSub}>Create your own puzzle!</Text>
                   </View>
-                </View>
+                </>
               )}
-            </TouchableOpacity>
+            </Pressable>
           </View>
-
-          <View style={{ height: Spacing.s5 }} />
+          <View style={{ height: 30 }} />
         </ScrollView>
       )}
 
-      {renderCategoryPuzzles()}
+      {/* Category puzzle picker modal */}
+      {selectedCat && (
+        <Modal visible animationType="slide" onRequestClose={() => setSelectedCat(null)}>
+          <SafeAreaView style={[styles.container, { backgroundColor: theme(selectedCat.category).bg }]} edges={['top']}>
+            <View style={[styles.header, { backgroundColor: theme(selectedCat.category).fg }]}>
+              <Pressable onPress={() => setSelectedCat(null)} style={styles.backBtn}>
+                <Ionicons name="arrow-back" size={28} color="#fff" />
+              </Pressable>
+              <Text style={styles.headerTitle}>{selectedCat.category}</Text>
+              <View style={{ width: 42 }} />
+            </View>
+            <ScrollView contentContainerStyle={styles.puzzleGrid}>
+              {selectedCat.puzzles.map(p => (
+                <Pressable
+                  key={p.id}
+                  style={({ pressed }) => [styles.puzzleCard, pressed && { opacity: 0.85 }]}
+                  onPress={() => { setSelectedCat(null); selectPuzzle(p, isLocal); }}
+                >
+                  <Image source={{ uri: getImageUri(p.image_base64) }} style={styles.puzzleImage} resizeMode="cover" />
+                </Pressable>
+              ))}
+            </ScrollView>
+          </SafeAreaView>
+        </Modal>
+      )}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.cream300,
-  },
+  container: { flex: 1, backgroundColor: '#FEEAC9' },
   header: {
-    flexDirection: 'row',
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    backgroundColor: Colors.coral600, paddingVertical: Spacing.s5, paddingHorizontal: Spacing.s5,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.25, shadowRadius: 5, elevation: 6,
+  },
+  backBtn: { padding: 5 },
+  headerTitle: { fontFamily: Fonts.heading, fontSize: FontSizes.h2, color: '#fff' },
+
+  loading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  loadingText: { fontFamily: Fonts.body, fontSize: FontSizes.label, color: Colors.coral600, marginTop: 16 },
+
+  scroll: { padding: 16, paddingTop: 14 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+
+  tile: {
+    width: TILE_SIZE,
+    paddingVertical: 18,
+    paddingHorizontal: 14,
+    borderRadius: 22,
     alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: Colors.coral600,
-    paddingVertical: Spacing.s5,
-    paddingHorizontal: Spacing.s5,
-    ...Shadows.s3,
+    gap: 6,
+    shadowColor: 'rgba(0,0,0,0.12)',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 5,
   },
-  backButton: {
-    padding: Spacing.s1,
+  tileIcon: { fontSize: 44 },
+  tileName: { fontFamily: Fonts.display, fontSize: 17, textAlign: 'center' },
+  tileCount: { fontFamily: Fonts.body, fontSize: 12 },
+
+  empty: { alignItems: 'center', padding: 50 },
+  emptyText: { fontFamily: Fonts.heading, fontSize: FontSizes.h2, color: Colors.coral600, marginTop: 16 },
+  emptySubText: { fontFamily: Fonts.body, fontSize: FontSizes.caption, color: Colors.coral400, marginTop: 8, textAlign: 'center' },
+
+  uploadSection: { marginTop: 24 },
+  sectionLabel: { fontFamily: Fonts.bodyBold, fontSize: FontSizes.body, color: Colors.coral600, marginBottom: 10 },
+  uploadBtn: {
+    backgroundColor: Colors.coral600, borderRadius: Radii.card, padding: 16,
+    flexDirection: 'row', alignItems: 'center', gap: 14,
+    shadowColor: '#C24747', shadowOffset: { width: 0, height: 5 }, shadowOpacity: 1, shadowRadius: 0, elevation: 5,
   },
-  headerTitle: {
-    fontFamily: Fonts.heading,
-    fontSize: FontSizes.h2,
-    color: Colors.onCoral,
+  uploadTitle: { fontFamily: Fonts.bodyBold, fontSize: FontSizes.body, color: '#fff' },
+  uploadSub:   { fontFamily: Fonts.body, fontSize: FontSizes.small, color: '#fff', opacity: 0.9, marginTop: 2 },
+
+  puzzleGrid: { flexDirection: 'row', flexWrap: 'wrap', padding: 16, justifyContent: 'space-between' },
+  puzzleCard: {
+    width: TILE_SIZE, height: TILE_SIZE, borderRadius: Radii.card, marginBottom: 14, overflow: 'hidden',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.1, shadowRadius: 0, elevation: 4,
+    backgroundColor: '#fff',
   },
-  placeholder: {
-    width: 42,
-  },
-  loadingContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  loadingText: {
-    fontFamily: Fonts.body,
-    fontSize: FontSizes.label,
-    color: Colors.coral600,
-    marginTop: Spacing.s5,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  categoriesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    padding: Spacing.s4,
-    gap: Spacing.s4,
-  },
-  categoryCard: {
-    width: CARD_SIZE,
-    height: CARD_HEIGHT,
-    borderRadius: Radii.tile,
-    overflow: 'hidden',
-    backgroundColor: Colors.paper,
-    ...Shadows.s2,
-    borderWidth: 3,
-  },
-  categoryPreviewImage: {
-    width: '100%',
-    height: CARD_HEIGHT - 50,
-  },
-  categoryPlaceholder: {
-    width: '100%',
-    height: CARD_HEIGHT - 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  categoryPlaceholderIcon: {
-    fontSize: 60,
-  },
-  categoryCardFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: Spacing.s3,
-    gap: Spacing.s2,
-  },
-  categoryCardIcon: {
-    fontSize: FontSizes.label,
-  },
-  categoryCardTitle: {
-    fontFamily: Fonts.bodyBold,
-    fontSize: FontSizes.caption,
-    color: Colors.onCoral,
-    flex: 1,
-  },
-  categoryCardCount: {
-    fontFamily: Fonts.bodyBold,
-    fontSize: FontSizes.small,
-    color: Colors.onCoral,
-    backgroundColor: 'rgba(255,255,255,0.3)',
-    paddingHorizontal: Spacing.s2,
-    paddingVertical: 2,
-    borderRadius: Radii.chip,
-  },
-  categoryCompleteBadge: {
-    position: 'absolute',
-    top: Spacing.s3,
-    right: Spacing.s3,
-    backgroundColor: Colors.paper,
-    borderRadius: Radii.tile,
-    padding: 2,
-    ...Shadows.s1,
-    zIndex: 10,
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: Colors.cream300,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: Spacing.s4,
-    paddingHorizontal: Spacing.s5,
-  },
-  modalHeaderTitle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.s3,
-  },
-  modalHeaderIcon: {
-    fontSize: FontSizes.h2,
-  },
-  modalHeaderText: {
-    fontFamily: Fonts.heading,
-    fontSize: FontSizes.h3,
-    color: Colors.onCoral,
-  },
-  modalHeaderCount: {
-    fontFamily: Fonts.bodyBold,
-    fontSize: FontSizes.caption,
-    color: Colors.onCoral,
-    backgroundColor: 'rgba(255,255,255,0.3)',
-    paddingHorizontal: Spacing.s3,
-    paddingVertical: Spacing.s1,
-    borderRadius: Radii.input,
-  },
-  puzzlesScrollView: {
-    flex: 1,
-  },
-  puzzlesGridContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    padding: Spacing.s4,
-    justifyContent: 'space-between',
-  },
-  puzzleGridCard: {
-    width: CARD_SIZE,
-    height: CARD_SIZE,
-    borderRadius: Radii.card,
-    marginBottom: Spacing.s4,
-    ...Shadows.s1,
-    position: 'relative',
-  },
-  puzzleGridImage: {
-    width: '100%',
-    height: '100%',
-    borderRadius: Radii.card,
-  },
-  puzzleSolvedBadge: {
-    position: 'absolute',
-    top: Spacing.s2,
-    right: Spacing.s2,
-    backgroundColor: Colors.paper,
-    borderRadius: 16,
-    padding: 2,
-    ...Shadows.s1,
-    zIndex: 10,
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 50,
-  },
-  emptyText: {
-    fontFamily: Fonts.heading,
-    fontSize: FontSizes.h2,
-    color: Colors.coral600,
-    marginTop: Spacing.s5,
-  },
-  emptySubText: {
-    fontFamily: Fonts.body,
-    fontSize: FontSizes.caption,
-    color: Colors.coral400,
-    marginTop: Spacing.s3,
-    textAlign: 'center',
-  },
-  uploadSection: {
-    padding: Spacing.s4,
-    paddingTop: Spacing.s1,
-  },
-  sectionTitle: {
-    fontFamily: Fonts.bodyBold,
-    fontSize: FontSizes.body,
-    color: Colors.coral600,
-    marginBottom: Spacing.s3,
-  },
-  uploadCard: {
-    backgroundColor: Colors.coral600,
-    borderRadius: Radii.card,
-    padding: Spacing.s4,
-    ...Shadows.s1,
-  },
-  uploadContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.s4,
-  },
-  uploadIconContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: Radii.hero,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  uploadTextContainer: {
-    flex: 1,
-  },
-  uploadTitle: {
-    fontFamily: Fonts.bodyBold,
-    fontSize: FontSizes.body,
-    color: Colors.onCoral,
-  },
-  uploadSubtitle: {
-    fontFamily: Fonts.body,
-    fontSize: FontSizes.small,
-    color: Colors.onCoral,
-    marginTop: 2,
-    opacity: 0.9,
-  },
-  uploadHint: {
-    fontFamily: Fonts.body,
-    fontSize: 12,
-    color: Colors.onCoral,
-    marginTop: Spacing.s1,
-    opacity: 0.7,
-  },
-  uploadText: {
-    fontFamily: Fonts.body,
-    fontSize: FontSizes.caption,
-    color: Colors.onCoral,
-    marginTop: Spacing.s3,
-  },
-  categoryModalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
-  },
-  categoryModalContent: {
-    backgroundColor: Colors.paper,
-    borderTopLeftRadius: Radii.hero,
-    borderTopRightRadius: Radii.hero,
-    padding: Spacing.s6,
-    maxHeight: '70%',
-  },
-  categoryModalTitle: {
-    fontFamily: Fonts.heading,
-    fontSize: FontSizes.h3,
-    color: Colors.ink,
-    textAlign: 'center',
-  },
-  categoryModalSubtitle: {
-    fontFamily: Fonts.body,
-    fontSize: FontSizes.small,
-    color: Colors.ink2,
-    textAlign: 'center',
-    marginTop: Spacing.s1,
-    marginBottom: Spacing.s4,
-  },
-  customCategoryContainer: {
-    marginBottom: Spacing.s3,
-  },
-  customCategoryInput: {
-    backgroundColor: Colors.slate,
-    borderRadius: Radii.input,
-    padding: Spacing.s4,
-    fontSize: FontSizes.caption,
-    borderWidth: 2,
-    borderColor: Colors.line,
-  },
-  orText: {
-    textAlign: 'center',
-    color: Colors.ink3,
-    fontSize: FontSizes.small,
-    marginVertical: Spacing.s3,
-  },
-  categoryList: {
-    maxHeight: 180,
-  },
-  categoryOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: Spacing.s4,
-    borderRadius: Radii.input,
-    marginBottom: Spacing.s3,
-    backgroundColor: Colors.slate,
-  },
-  categoryOptionSelected: {
-    backgroundColor: Colors.green50,
-    borderWidth: 2,
-    borderColor: Colors.green500,
-  },
-  categoryOptionText: {
-    fontFamily: Fonts.body,
-    fontSize: FontSizes.body,
-    color: Colors.ink,
-  },
-  categoryOptionTextSelected: {
-    fontFamily: Fonts.bodyBold,
-    color: Colors.green500,
-  },
-  categoryModalButtons: {
-    flexDirection: 'row',
-    gap: Spacing.s4,
-    marginTop: Spacing.s5,
-  },
-  cancelButton: {
-    flex: 1,
-    padding: Spacing.s4,
-    borderRadius: Radii.input,
-    backgroundColor: Colors.slate,
-    alignItems: 'center',
-  },
-  cancelButtonText: {
-    fontFamily: Fonts.body,
-    fontSize: FontSizes.caption,
-    color: Colors.ink2,
-  },
-  saveButton: {
-    flex: 1,
-    padding: Spacing.s4,
-    borderRadius: Radii.input,
-    backgroundColor: Colors.green500,
-    alignItems: 'center',
-  },
-  saveButtonText: {
-    fontFamily: Fonts.bodyBold,
-    fontSize: FontSizes.caption,
-    color: Colors.onCoral,
-  },
+  puzzleImage: { width: '100%', height: '100%' },
 });
