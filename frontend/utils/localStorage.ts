@@ -29,7 +29,7 @@ const ensureDirectoryExists = async () => {
       await LegacyFileSystem.makeDirectoryAsync(PUZZLES_DIR, { intermediates: true });
     }
   } catch (error) {
-    console.error('Error creating directory:', error);
+    // silenced;
   }
 };
 
@@ -60,7 +60,7 @@ export const saveImageLocally = async (
       });
       imageUri = fileUri;
     } catch (error) {
-      console.error('Error saving file:', error);
+      // silenced;
       // Fallback to storing base64 directly
       imageUri = `data:image/jpeg;base64,${base64Image}`;
       base64Data = base64Image;
@@ -94,7 +94,7 @@ export const getLocalPuzzles = async (): Promise<LocalPuzzle[]> => {
     console.log('Loaded local puzzles:', puzzles.length);
     return puzzles;
   } catch (error) {
-    console.error('Error getting local puzzles:', error);
+    // silenced;
     return [];
   }
 };
@@ -116,7 +116,7 @@ export const deleteLocalPuzzle = async (puzzleId: string): Promise<void> => {
       try {
         await LegacyFileSystem.deleteAsync(puzzle.imageUri, { idempotent: true });
       } catch (error) {
-        console.error('Error deleting file:', error);
+        // silenced;
       }
     }
     
@@ -141,7 +141,7 @@ export const getImageAsBase64 = async (imageUri: string): Promise<string> => {
       });
       return `data:image/jpeg;base64,${base64}`;
     } catch (error) {
-      console.error('Error reading file:', error);
+      // silenced;
       return imageUri;
     }
   }

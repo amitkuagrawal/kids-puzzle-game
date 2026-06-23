@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Analytics } from '../utils/analytics';
 import { getUserProfile } from '../services/firebase-service';
+import { Colors, Fonts, FontSizes, Radii, Spacing, Shadows } from '../constants/theme';
 
 const { width } = Dimensions.get('window');
 
@@ -41,8 +42,7 @@ export default function Index() {
         // Profile exists, go directly to play/join choice
         router.push('/child/join-group');
       }
-    } catch (error) {
-      console.error('Error checking user profile:', error);
+    } catch {
       // On error, go to welcome screen to be safe
       router.push('/child/welcome');
     } finally {
@@ -204,14 +204,14 @@ export default function Index() {
     <View style={styles.container}>
       {/* Decorative elements - moved to background with pointerEvents in styles */}
       <View style={styles.decoration}>
-        <Ionicons name="star" size={30} color="#FFD700" style={styles.star1} />
-        <Ionicons name="star" size={25} color="#FF69B4" style={styles.star2} />
-        <Ionicons name="star" size={35} color="#87CEEB" style={styles.star3} />
+        <Ionicons name="star" size={30} color={Colors.gold500} style={styles.star1} />
+        <Ionicons name="star" size={25} color={Colors.pink400} style={styles.star2} />
+        <Ionicons name="star" size={35} color={Colors.sky300} style={styles.star3} />
       </View>
 
       {/* Title */}
       <View style={styles.titleContainer}>
-        <Ionicons name="extension-puzzle" size={60} color="#FD7979" />
+        <Ionicons name="extension-puzzle" size={60} color={Colors.coral600} />
         <Text style={styles.title}>Puzzle Fun!</Text>
         <Text style={styles.subtitle}>For Kids 5-8 Years</Text>
       </View>
@@ -226,16 +226,16 @@ export default function Index() {
         <Text style={styles.demoText}>📸 Upload Your Fav Picture!</Text>
         <View style={styles.puzzleContainer}>
           <Animated.View style={[styles.puzzlePiece, styles.piece1, piece1Style]}>
-            <Ionicons name="image" size={32} color="#4CAF50" />
+            <Ionicons name="image" size={32} color={Colors.green500} />
           </Animated.View>
           <Animated.View style={[styles.puzzlePiece, styles.piece2, piece2Style]}>
-            <Ionicons name="image" size={32} color="#2196F3" />
+            <Ionicons name="image" size={32} color={Colors.blue500} />
           </Animated.View>
           <Animated.View style={[styles.puzzlePiece, styles.piece3, piece3Style]}>
-            <Ionicons name="image" size={32} color="#FF9800" />
+            <Ionicons name="image" size={32} color={Colors.orange500} />
           </Animated.View>
           <Animated.View style={[styles.puzzlePiece, styles.piece4, piece4Style]}>
-            <Ionicons name="image" size={32} color="#9C27B0" />
+            <Ionicons name="image" size={32} color={Colors.purple500} />
           </Animated.View>
         </View>
         <Text style={styles.demoText}>🧩 Solve the Puzzle!</Text>
@@ -250,7 +250,7 @@ export default function Index() {
           activeOpacity={0.8}
           disabled={isLoading}
         >
-          <Ionicons name="game-controller" size={40} color="white" />
+          <Ionicons name="game-controller" size={40} color={Colors.onCoral} />
           <Text style={styles.buttonText}>
             {isLoading ? 'Loading...' : 'Play Puzzle!'}
           </Text>
@@ -261,7 +261,7 @@ export default function Index() {
           onPress={() => router.push('/parent/dashboard')}
           activeOpacity={0.8}
         >
-          <Ionicons name="people" size={32} color="white" />
+          <Ionicons name="people" size={32} color={Colors.onCoral} />
           <Text style={styles.buttonTextSmall}>Parent Dashboard</Text>
         </TouchableOpacity>
       </View>
@@ -272,45 +272,49 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFCDC9',
+    backgroundColor: Colors.coral200,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 20,
-    paddingHorizontal: 20,
+    paddingVertical: Spacing.s5,
+    paddingHorizontal: Spacing.s5,
   },
   titleContainer: {
     alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: Spacing.s5,
   },
   title: {
+    fontFamily: Fonts.display,
     fontSize: 42,
     fontWeight: 'bold',
-    color: '#FD7979',
-    marginTop: 10,
+    color: Colors.coral600,
+    marginTop: Spacing.s3,
     textShadowColor: 'rgba(0, 0, 0, 0.1)',
     textShadowOffset: { width: 2, height: 2 },
     textShadowRadius: 5,
   },
   subtitle: {
-    fontSize: 18,
-    color: '#FD7979',
-    marginTop: 5,
+    fontFamily: Fonts.body,
+    fontSize: FontSizes.body,
+    color: Colors.coral600,
+    marginTop: Spacing.s1,
     fontWeight: '600',
   },
   puzzleDemo: {
     alignItems: 'center',
-    marginBottom: 30,
-    paddingHorizontal: 20,
+    marginBottom: Spacing.s5,
+    paddingHorizontal: Spacing.s5,
   },
   demoText: {
-    fontSize: 16,
-    color: '#FD7979',
+    fontFamily: Fonts.bodyBold,
+    fontSize: FontSizes.caption,
+    color: Colors.coral600,
     fontWeight: 'bold',
     marginVertical: 6,
   },
   tapHint: {
+    fontFamily: Fonts.body,
     fontSize: 12,
-    color: '#FD7979',
+    color: Colors.coral600,
     fontWeight: '600',
     marginTop: 3,
     opacity: 0.8,
@@ -326,71 +330,65 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 50,
     height: 50,
-    backgroundColor: '#FEEAC9',
-    borderRadius: 8,
+    backgroundColor: Colors.cream300,
+    borderRadius: Radii.chip,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 6,
+    ...Shadows.s2,
   },
   piece1: {
-    top: 10,
-    left: 10,
+    top: Spacing.s3,
+    left: Spacing.s3,
   },
   piece2: {
-    top: 10,
-    right: 10,
+    top: Spacing.s3,
+    right: Spacing.s3,
   },
   piece3: {
-    bottom: 10,
-    left: 10,
+    bottom: Spacing.s3,
+    left: Spacing.s3,
   },
   piece4: {
-    bottom: 10,
-    right: 10,
+    bottom: Spacing.s3,
+    right: Spacing.s3,
   },
   buttonContainer: {
     width: '100%',
     alignItems: 'center',
-    gap: 12,
+    gap: Spacing.s3,
   },
   button: {
     width: width * 0.8,
     height: 100,
-    borderRadius: 20,
+    borderRadius: Radii.tile,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 8,
+    ...Shadows.s3,
   },
   childButton: {
-    backgroundColor: '#FD7979',
+    backgroundColor: Colors.coral600,
   },
   parentButton: {
     backgroundColor: '#6A1B9A',
     height: 80,
   },
   adminButton: {
-    backgroundColor: '#FDACAC',
+    backgroundColor: Colors.coral400,
     height: 80,
   },
   buttonText: {
-    fontSize: 28,
+    fontFamily: Fonts.display,
+    fontSize: FontSizes.h2,
     fontWeight: 'bold',
-    color: 'white',
-    marginTop: 8,
+    color: Colors.onCoral,
+    marginTop: Spacing.s2,
   },
   buttonTextSmall: {
-    fontSize: 18,
+    fontFamily: Fonts.heading,
+    fontSize: FontSizes.body,
     fontWeight: 'bold',
-    color: 'white',
-    marginTop: 5,
+    color: Colors.onCoral,
+    marginTop: Spacing.s1,
   },
   decoration: {
     position: 'absolute',
@@ -406,7 +404,7 @@ const styles = StyleSheet.create({
   star2: {
     position: 'absolute',
     top: 150,
-    right: 40,
+    right: Spacing.s7,
   },
   star3: {
     position: 'absolute',

@@ -15,8 +15,7 @@ export const getSessionId = async (): Promise<string> => {
     }
     
     return sessionId;
-  } catch (error) {
-    console.error('Error getting session ID:', error);
+  } catch {
     return `session_${Date.now()}_${Math.random().toString(36).substring(7)}`;
   }
 };
@@ -44,9 +43,8 @@ export const trackEvent = async (
         device_type: Platform.OS,
       }),
     });
-  } catch (error) {
-    console.error('Error tracking event:', error);
-    // Fail silently - don't disrupt user experience
+  } catch {
+    // Fail silently - backend may not be running
   }
 };
 
